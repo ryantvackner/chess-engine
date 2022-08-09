@@ -8,10 +8,16 @@ Created on Wed Aug  3 22:49:14 2022
   
 import chess_engine
 
-
 def main():
     # create the board/gamestate
     gs = chess_engine.GameState()
+    
+    # create the valid moves
+    valid_moves = gs.get_valid_moves()
+    print(valid_moves)
+    
+    # flag var to indicate a move has been made
+    move_made = False
     
     # print the board
     draw_board(gs.board)
@@ -21,11 +27,27 @@ def main():
     
     # first move
     if running:
-        m1 = input("1. ")
-        print(m1)
-        move = chess_engine.Move(m1, gs.board)
-        gs.make_move(move)
+        # get move 1 input
+        move = input("1. ")
+        
+        # check if the move is valid
+        if move in valid_moves[0]:
+            # find the move id and find out what piece made the move
+            move_id = valid_moves[0].index(move)
+            piece = valid_moves[1][move_id]
+            start_sq = valid_moves[2][move_id]
+            # make the move
+            gs.make_move(move, piece, start_sq)
+            
+            # flag that the move has been made
+            move_made = True
+    
+        
         draw_board(gs.board)
+        
+    if move_made:
+        valid_moves = gs.get_valid_moves()
+        move_made = False
         
 
 def draw_board(board):
