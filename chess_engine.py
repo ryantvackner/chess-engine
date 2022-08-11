@@ -14,8 +14,8 @@ class GameState():
             ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
             ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
-            ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
-            ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
+            ["5", "-", "-", "-", "R", "-", "-", "-", "-", "5"],
+            ["4", "-", "-", "-", "-", "-", "-", "N", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
             ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
             ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
@@ -73,16 +73,15 @@ class GameState():
                 case = self.board[r][c]
                 if (case.isupper() and self.white_to_move) or (case.islower() and not self.white_to_move):
                     piece = self.board[r][c]
-                    self.move_functions[piece](r, c, moves, piece_moved, start_sq, pgn)
+                    self.move_functions[piece](r, c, moves, piece_moved, start_sq)
                     
         print(moves)
-        print(piece_moved)
-        print(start_sq)
+        pgn = GameState.get_pgn(self, moves, piece_moved, start_sq)
         print(pgn)
         return pgn, piece_moved, start_sq, moves
                         
     # pawn moves
-    def get_pawn_moves(self, r, c, moves, piece_moved, start_sq, pgn):
+    def get_pawn_moves(self, r, c, moves, piece_moved, start_sq):
         # white pawns
         if self.white_to_move:
             # white pawn moves forward one space
@@ -90,27 +89,23 @@ class GameState():
                 moves.append(GameState.rank_file(r-1, c))
                 piece_moved.append("P")
                 start_sq.append((r, c))
-                pgn.append(GameState.rank_file(r-1, c))
                 # white pawn moves forward two spaces on first turn 
                 if r == 7 and self.board[r-2][c] == "-":
                     moves.append(GameState.rank_file(r-2, c))
                     piece_moved.append("P")
                     start_sq.append((r, c))
-                    pgn.append(GameState.rank_file(r-2, c))
             # white pawn capture left
             if c-1 >= 1:
                 if self.board[r-1][c-1].islower():
                     moves.append(GameState.rank_file(r-1, c-1))
                     piece_moved.append("P")
                     start_sq.append((r, c))
-                    pgn.append(GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-1, c-1))
             # white pawn capture right
             if c+1 <= 8:
                 if self.board[r-1][c+1].islower():
                     moves.append(GameState.rank_file(r-1, c+1))
                     piece_moved.append("P")
                     start_sq.append((r, c))
-                    pgn.append(GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-1, c+1))
         # black pawns 
         else:
             # black pawn moves forward one space
@@ -118,30 +113,26 @@ class GameState():
                 moves.append(GameState.rank_file(r+1, c))
                 piece_moved.append("p")
                 start_sq.append((r, c))
-                pgn.append(GameState.rank_file(r+1, c))
                 # black pawn moves forward two spaces on first turn 
                 if r == 2 and self.board[r+2][c] == "-":
                     moves.append(GameState.rank_file(r+2, c))
                     piece_moved.append("p")
                     start_sq.append((r, c))
-                    pgn.append(GameState.rank_file(r+2, c))
             # black pawn capture left
             if c-1 >= 1:
                 if self.board[r+1][c-1].isupper():
                     moves.append(GameState.rank_file(r+1, c-1))
                     piece_moved.append("p")
                     start_sq.append((r, c))
-                    pgn.append(GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+1, c-1))
             # black pawn capture right
             if c+1 <= 8:
                 if self.board[r+1][c+1].islower():
                     moves.append(GameState.rank_file(r+1, c+1))
                     piece_moved.append("p")
                     start_sq.append((r, c))
-                    pgn.append(GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+1, c+1))
     
     # pawn moves
-    def get_rook_moves(self, r, c, moves, piece_moved, start_sq, pgn):
+    def get_rook_moves(self, r, c, moves, piece_moved, start_sq):
         # white rook
         if self.white_to_move:
             # check if up the board is clear
@@ -151,10 +142,8 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r-u][c].islower():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-u, c))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r-u, c))
                     u += 1
             # check if down the board is clear 
             d = 1
@@ -163,10 +152,8 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r+d][c].islower():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+d, c))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r+d, c))
                     d += 1
             # check if left of the board is clear 
             l = 1
@@ -175,10 +162,8 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r][c-l].islower():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r, c-l))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r, c-l))
                     l += 1
             # check if right of the board is clear 
             l = 1
@@ -187,10 +172,8 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r][c+l].islower():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r, c+l))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r, c+l))
                     l += 1
         # check black rook moves
         else:
@@ -201,10 +184,8 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r-u][c].isupper():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-u, c))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r-u, c))
                     u += 1
             # check if down the board is clear 
             d = 1
@@ -213,10 +194,8 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r+d][c].isupper():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+d, c))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r+d, c))
                     d += 1
             # check if left of the board is clear 
             l = 1
@@ -225,10 +204,8 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r][c-l].isupper():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r, c-l))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r, c-l))
                     l += 1
             # check if right of the board is clear 
             l = 1
@@ -237,16 +214,14 @@ class GameState():
                 piece_moved.append("R")
                 start_sq.append((r, c))
                 if self.board[r][c+l].isupper():
-                    pgn.append("R" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r, c+l))
                     break
                 else:
-                    pgn.append("R" + GameState.rank_file(r, c+l))
                     l += 1
     
     # knight moves
     # pgn is not correct
     # will need to create a pgn def that works
-    def get_knight_moves(self, r, c, moves, piece_moved, start_sq, pgn):
+    def get_knight_moves(self, r, c, moves, piece_moved, start_sq):
         # white rook
         if self.white_to_move:
             if r != 1:
@@ -256,37 +231,21 @@ class GameState():
                         moves.append(GameState.rank_file(r-2, c-1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r-2][c-1].islower():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-2, c-1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r-2, c-1))
                     # knight top right move
                     if  c <= 7 and (self.board[r-2][c+1] == "-" or self.board[r-2][c+1].islower()):
                         moves.append(GameState.rank_file(r-2, c+1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r-2][c+1].islower():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-2, c+1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r-2, c+1))
                 # Knight left top move
                 if c >= 3 and (self.board[r-1][c-2] == "-" or self.board[r-1][c-2].islower()):
                     moves.append(GameState.rank_file(r-1, c-2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r-1][c-2].islower():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-1, c-2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r-1, c-2))
                 # knight right top move
                 if  c <= 6 and (self.board[r-1][c+2] == "-" or self.board[r-1][c+2].islower()):
                     moves.append(GameState.rank_file(r-1, c+2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r-1][c+2].islower():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-1, c+2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r-1, c+2))
 
             if r != 8:
                 if r != 7:
@@ -295,37 +254,21 @@ class GameState():
                         moves.append(GameState.rank_file(r+2, c+1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r+2][c+1].islower():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+2, c+1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r+2, c+1))
                     # knight bottom left move
                     if  c >= 2 and (self.board[r+2][c-1] == "-" or self.board[r+2][c-1].islower()):
                         moves.append(GameState.rank_file(r+2, c-1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r+2][c-1].islower():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+2, c-1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r+2, c-1))
                 # knight right bottom move
                 if  c <= 6 and (self.board[r+1][c+2] == "-" or self.board[r+1][c+2].islower()):
                     moves.append(GameState.rank_file(r+1, c+2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r+1][c+2].islower():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+1, c+2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r+1, c+2))
                 # knight left bottom move
                 if  c >= 3 and (self.board[r+1][c-2] == "-" or self.board[r+1][c-2].islower()):
                     moves.append(GameState.rank_file(r+1, c-2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r+1][c-2].islower():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+1, c-2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r+1, c-2))
                     
         # black knight
         else:
@@ -336,37 +279,21 @@ class GameState():
                         moves.append(GameState.rank_file(r-2, c-1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r-2][c-1].isupper():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-2, c-1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r-2, c-1))
                     # knight top right move
                     if  c <= 7 and (self.board[r-2][c+1] == "-" or self.board[r-2][c+1].isupper()):
                         moves.append(GameState.rank_file(r-2, c+1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r-2][c+1].isupper():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-2, c+1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r-2, c+1))
                 # Knight left top move
                 if c >= 3 and (self.board[r-1][c-2] == "-" or self.board[r-1][c-2].isupper()):
                     moves.append(GameState.rank_file(r-1, c-2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r-1][c-2].isupper():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-1, c-2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r-1, c-2))
                 # knight right top move
                 if  c <= 6 and (self.board[r-1][c+2] == "-" or self.board[r-1][c+2].isupper()):
                     moves.append(GameState.rank_file(r-1, c+2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r-1][c+2].isupper():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r-1, c+2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r-1, c+2))
 
             if r != 8:
                 if r != 7:
@@ -375,48 +302,32 @@ class GameState():
                         moves.append(GameState.rank_file(r+2, c+1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r+2][c+1].isupper():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+2, c+1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r+2, c+1))
                     # knight bottom left move
                     if  c >= 2 and (self.board[r+2][c-1] == "-" or self.board[r+2][c-1].isupper()):
                         moves.append(GameState.rank_file(r+2, c-1))
                         piece_moved.append("N")
                         start_sq.append((r, c))
-                        if self.board[r+2][c-1].isupper():
-                            pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+2, c-1))
-                        else:
-                            pgn.append("N" + GameState.rank_file(r+2, c-1))
                 # knight right bottom move
                 if  c <= 6 and (self.board[r+1][c+2] == "-" or self.board[r+1][c+2].isupper()):
                     moves.append(GameState.rank_file(r+1, c+2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r+1][c+2].isupper():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+1, c+2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r+1, c+2))
                 # knight left bottom move
                 if  c >= 3 and (self.board[r+1][c-2] == "-" or self.board[r+1][c-2].isupper()):
                     moves.append(GameState.rank_file(r+1, c-2))
                     piece_moved.append("N")
                     start_sq.append((r, c))
-                    if self.board[r+1][c-2].isupper():
-                        pgn.append("N" + GameState.rank_file(r, c)[0] + "x" + GameState.rank_file(r+1, c-2))
-                    else:
-                        pgn.append("N" + GameState.rank_file(r+1, c-2))
     
     # pawn moves
-    def get_bishop_moves(self, r, c, moves, piece_moved, start_sq, pgn):
+    def get_bishop_moves(self, r, c, moves, piece_moved, start_sq):
         pass
     
     # pawn moves
-    def get_queen_moves(self, r, c, moves, piece_moved, start_sq, pgn):
+    def get_queen_moves(self, r, c, moves, piece_moved, start_sq):
         pass
     
     # pawn moves
-    def get_king_moves(self, r, c, moves, piece_moved, start_sq, pgn):
+    def get_king_moves(self, r, c, moves, piece_moved, start_sq):
         pass
     
     # rank file
@@ -449,47 +360,76 @@ class GameState():
     def get_pgn(self, moves, piece_moved, start_sq):
         # temporarily good
         # still need to add it check, promotions, and checkmate
+        rank_file = []
+        board_sq = []
+        for i in range(0, len(start_sq)):
+            rank_file.append(GameState.rank_file(start_sq[i][0], start_sq[i][1]))
+        for i in range(0, len(moves)):
+            board_sq.append(GameState.row_col(moves[i][1], moves[i][0]))
+        
         pgn = []
         if self.white_to_move:
             for i in range(0, len(moves)):
                 for j in range(0, len(moves)):
-                    # are the moves to the same square?
-                    if (moves[i] == moves[j]):
-                        # the two pieces that are moving there the same?
-                        if (piece_moved[i] == piece_moved[j]):
-                            # the two pieces that are moved on the same file?
-                            if (GameState.rank_file(start_sq[i][0], start_sq[i][1])[0] == GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]):
+                    # check if indexes are the same
+                    if i != j:
+                        # are the moves to the same square?
+                        if (moves[i] == moves[j]):
+                            # the two pieces that are moving there the same?
+                            if (piece_moved[i] == piece_moved[j]):
+                                # the two pieces that are moved on the same file?
+                                if (GameState.rank_file(start_sq[i][0], start_sq[i][1])[0] == GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]):
+                                    # check if a piece was captured
+                                    if(self.board[board_sq[i][1]][board_sq[i][0]].islower()):
+                                        pgn.append(piece_moved[i] + rank_file[i][1] + "x" + moves[i])
+                                        break
+                                    else:
+                                        pgn.append(piece_moved[i] + rank_file[i][1] + moves[i])
+                                        break
+                                else:
+                                    # check if a piece was caputred
+                                    if(self.board[board_sq[i][1]][board_sq[i][0]].islower()):
+                                        pgn.append(piece_moved[i] + rank_file[i][0] + "x" + moves[i])
+                                        break
+                                    else:
+                                        pgn.append(piece_moved[i] + rank_file[i][0] + moves[i])
+                                        break
+                            else:
+                                # check if pawn was moved
+                                if (piece_moved[i] == "P"):
+                                    # check if a piece was captured
+                                    if(self.board[board_sq[i][1]][board_sq[i][0]].islower()):
+                                        pgn.append(rank_file[i][0] + "x" + moves[i])
+                                        break
+                                    else:
+                                        pgn.append(moves[i])
+                                        break
+                                else:
+                                    # check if a piece was captured
+                                    if(self.board[board_sq[i][1]][board_sq[i][0]].islower()):
+                                        pgn.append(piece_moved[i] + "x" + moves[i])
+                                        break
+                                    else:
+                                        pgn.append(piece_moved[i] + moves[i])
+                                        break
+                        else:
+                            # check if pawn was moved
+                            if (piece_moved[i] == "P"):
                                 # check if a piece was captured
-                                if(moves[i].islower()):
-                                    pgn.append(piece_moved[i] + start_sq[i][1] + "x" + moves[i])
+                                if(self.board[board_sq[i][1]][board_sq[i][0]].islower()):
+                                    pgn.append(rank_file[i][0] + "x" + moves[i])
+                                    break
                                 else:
-                                    pgn.append(piece_moved[i] + start_sq[i][1] + moves[i])
+                                    pgn.append(moves[i])
+                                    break
                             else:
-                                # check if a piece was caputred
-                                if(moves[i].islower()):
-                                    pgn.append(piece_moved[i] + start_sq[i][0] + "x" + moves[i])
+                                # check if a piece was captured
+                                if(self.board[board_sq[i][1]][board_sq[i][0]].islower()):
+                                    pgn.append(piece_moved[i] + "x" + moves[i])
+                                    break
                                 else:
-                                    pgn.append(piece_moved[i] + start_sq[i][0] + moves[i])
-                        else:
-                            # check if a piece was captured
-                            if(moves[i].islower()):
-                                pgn.append(piece_moved[i] + "x" + moves[i])
-                            else:
-                                pgn.append(piece_moved[i] + moves[i])
-                    else:
-                        # check if pawn was moved
-                        if (piece_moved[i] == "P"):
-                            # check if a piece was captured
-                            if(moves[i].islower()):
-                                pgn.append(start_sq[i][0] + "x" + moves[i])
-                            else:
-                                pgn.append(moves[i])
-                        else:
-                            # check if a piece was captured
-                            if(moves[i].islower()):
-                                pgn.append(piece_moved[i] + "x" + moves[i])
-                            else:
-                                pgn.append(piece_moved[i] + moves[i])
+                                    pgn.append(piece_moved[i] + moves[i])
+                                    break
         else:
             pass
         return pgn
