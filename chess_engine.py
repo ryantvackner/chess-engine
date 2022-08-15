@@ -663,6 +663,47 @@ class GameState():
                 piece_moved.append("K")
                 start_sq.append((r, c))
                 i += 1
+        # black king
+        else:
+            i = 0
+            count = 0
+            # black king up
+            if self.board[r-1][c] == "-" or self.board[r-1][c].isupper() and r-1 != 0: 
+                moves.append(GameState.rank_file(r-1, c))
+                count += 1
+            # black king down 
+            if self.board[r+1][c] == "-" or self.board[r+1][c].isupper() and r+1 != 9: 
+                moves.append(GameState.rank_file(r+1, c))
+                count += 1
+            # black king left
+            if self.board[r][c-1] == "-" or self.board[r][c-1].isupper() and c-1 != 0: 
+                moves.append(GameState.rank_file(r, c-1))
+                count += 1
+            # black king right
+            if self.board[r][c+1] == "-" or self.board[r][c+1].isupper() and c+1 != 9: 
+                moves.append(GameState.rank_file(r, c+1))
+                count += 1
+            # black king up right
+            if self.board[r-1][c+1] == "-" or self.board[r-1][c+1].isupper() and r-1 != 0 and c+1 != 9: 
+                moves.append(GameState.rank_file(r-1, c+1))
+                count += 1
+            # black king up left
+            if self.board[r-1][c-1] == "-" or self.board[r-1][c-1].isupper() and r-1 != 0 and c-1 != 0: 
+                moves.append(GameState.rank_file(r-1, c-1))
+                count += 1
+            # black king down left
+            if self.board[r+1][c-1] == "-" or self.board[r+1][c-1].isupper() and r+1 != 9 and c-1 != 0: 
+                moves.append(GameState.rank_file(r+1, c-1))
+                count += 1
+            # black king down right
+            if self.board[r+1][c+1] == "-" or self.board[r+1][c+1].isupper() and r+1 != 9 and c+1 != 9: 
+                moves.append(GameState.rank_file(r+1, c+1))
+                count += 1
+
+            while i < count:
+                piece_moved.append("K")
+                start_sq.append((r, c))
+                i += 1
     
     # rank file
     def rank_file(r, c):
