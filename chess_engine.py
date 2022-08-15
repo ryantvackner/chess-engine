@@ -14,9 +14,9 @@ class GameState():
             ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
             ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
-            ["5", "-", "-", "-", "Q", "-", "-", "-", "-", "5"],
+            ["5", "-", "-", "-", "-", "K", "-", "-", "-", "5"],
             ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
-            ["3", "-", "-", "-", "Q", "-", "Q", "-", "-", "3"],
+            ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
             ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
             ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
@@ -622,7 +622,47 @@ class GameState():
     
     # king moves
     def get_king_moves(self, r, c, moves, piece_moved, start_sq):
-        pass
+        # white king 
+        if self.white_to_move:
+            i = 0
+            count = 0
+            # white king up
+            if self.board[r-1][c] == "-" or self.board[r-1][c].islower() and r-1 != 0: 
+                moves.append(GameState.rank_file(r-1, c))
+                count += 1
+            # white king down 
+            if self.board[r+1][c] == "-" or self.board[r+1][c].islower() and r+1 != 9: 
+                moves.append(GameState.rank_file(r+1, c))
+                count += 1
+            # white king left
+            if self.board[r][c-1] == "-" or self.board[r][c-1].islower() and c-1 != 0: 
+                moves.append(GameState.rank_file(r, c-1))
+                count += 1
+            # white king right
+            if self.board[r][c+1] == "-" or self.board[r][c+1].islower() and c+1 != 9: 
+                moves.append(GameState.rank_file(r, c+1))
+                count += 1
+            # white king up right
+            if self.board[r-1][c+1] == "-" or self.board[r-1][c+1].islower() and r-1 != 0 and c+1 != 9: 
+                moves.append(GameState.rank_file(r-1, c+1))
+                count += 1
+            # white king up left
+            if self.board[r-1][c-1] == "-" or self.board[r-1][c-1].islower() and r-1 != 0 and c-1 != 0: 
+                moves.append(GameState.rank_file(r-1, c-1))
+                count += 1
+            # white king down left
+            if self.board[r+1][c-1] == "-" or self.board[r+1][c-1].islower() and r+1 != 9 and c-1 != 0: 
+                moves.append(GameState.rank_file(r+1, c-1))
+                count += 1
+            # white king down right
+            if self.board[r+1][c+1] == "-" or self.board[r+1][c+1].islower() and r+1 != 9 and c+1 != 9: 
+                moves.append(GameState.rank_file(r+1, c+1))
+                count += 1
+
+            while i < count:
+                piece_moved.append("K")
+                start_sq.append((r, c))
+                i += 1
     
     # rank file
     def rank_file(r, c):
