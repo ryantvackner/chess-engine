@@ -14,9 +14,9 @@ class GameState():
             ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
             ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
-            ["5", "-", "-", "-", "B", "-", "-", "-", "-", "5"],
-            ["4", "-", "-", "-", "B", "B", "-", "-", "-", "4"],
-            ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
+            ["5", "-", "-", "-", "Q", "-", "-", "-", "-", "5"],
+            ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
+            ["3", "-", "-", "-", "Q", "-", "Q", "-", "-", "3"],
             ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
             ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
@@ -327,7 +327,7 @@ class GameState():
                     start_sq.append((r, c))
                     i += 1
     
-    # pawn moves
+    # bishop moves
     def get_bishop_moves(self, r, c, moves, piece_moved, start_sq):
         # white to move
         if self.white_to_move:
@@ -437,11 +437,190 @@ class GameState():
                 start_sq.append((r, c))
                 i += 1
     
-    # pawn moves
+    # queen moves
     def get_queen_moves(self, r, c, moves, piece_moved, start_sq):
-        pass
+        # white queen
+        if self.white_to_move:
+            # using north, south, east, west cordinates
+            i = 0
+            count = 0
+            # check if up the board is clear
+            n = 1
+            while self.board[r-n][c] == "-" or self.board[r-n][c].islower() and r-n != 0:
+                moves.append(GameState.rank_file(r-n, c))
+                count += 1
+                if self.board[r-n][c].islower():
+                    break
+                else:
+                    n += 1
+            # check if down the board is clear 
+            s = 1
+            while self.board[r+s][c] == "-" or self.board[r+s][c].islower() and r+s != 9:
+                moves.append(GameState.rank_file(r+s, c))
+                count += 1
+                if self.board[r+s][c].islower():
+                    break
+                else:
+                    s += 1
+            # check if left of the board is clear 
+            w = 1
+            while self.board[r][c-w] == "-" or self.board[r][c-w].islower() and c-w != 0:
+                moves.append(GameState.rank_file(r, c-w))
+                count += 1
+                if self.board[r][c-w].islower():
+                    break
+                else:
+                    w += 1
+            # check if right of the board is clear 
+            e = 1
+            while self.board[r][c+e] == "-" or self.board[r][c+e].islower() and c+e != 9:
+                moves.append(GameState.rank_file(r, c+e))
+                count += 1
+                if self.board[r][c+e].islower():
+                    break
+                else:
+                    e += 1
+            # check if top left is clear
+            n = 1
+            w = 1
+            while self.board[r+n][c-w] == "-" or self.board[r+n][c-w].islower() and r+n != 9 and c-w != 0:
+                moves.append(GameState.rank_file(r+n, c-w))
+                count += 1
+                if self.board[r+n][c-w].islower():
+                    break
+                else:
+                    n += 1
+                    w += 1
+            # check if top right is clear
+            n = 1
+            e = 1
+            while self.board[r+n][c+e] == "-" or self.board[r+n][c+e].islower() and r+n != 9 and c+e != 9:
+                moves.append(GameState.rank_file(r+n, c+e))
+                count += 1
+                if self.board[r+n][c+e].islower():
+                    break
+                else:
+                    n += 1
+                    e += 1
+            # check if bottom left is clear
+            s = 1
+            w = 1
+            while self.board[r-s][c-w] == "-" or self.board[r-s][c-w].islower() and r-s != 0 and c-w != 0:
+                moves.append(GameState.rank_file(r-s, c-w))
+                count += 1
+                if self.board[r-s][c-w].islower():
+                    break
+                else:
+                    s += 1
+                    w += 1
+            # check if bottom left is clear
+            s = 1
+            w = 1
+            while self.board[r-s][c+w] == "-" or self.board[r-s][c+w].islower() and r-s != 0 and c+w != 9:
+                moves.append(GameState.rank_file(r-s, c+w))
+                count += 1
+                if self.board[r-s][c+w].islower():
+                    break
+                else:
+                    s += 1
+                    w += 1
+            # append the moves
+            while i < count:
+                piece_moved.append("Q")
+                start_sq.append((r, c))
+                i += 1
+        # black queen
+        else:
+            # using north, south, east, west cordinates
+            i = 0
+            count = 0
+            # check if up the board is clear
+            n = 1
+            while self.board[r-n][c] == "-" or self.board[r-n][c].isupper() and r-n != 0:
+                moves.append(GameState.rank_file(r-n, c))
+                count += 1
+                if self.board[r-n][c].isupper():
+                    break
+                else:
+                    n += 1
+            # check if down the board is clear 
+            s = 1
+            while self.board[r+s][c] == "-" or self.board[r+s][c].isupper() and r+s != 9:
+                moves.append(GameState.rank_file(r+s, c))
+                count += 1
+                if self.board[r+s][c].isupper():
+                    break
+                else:
+                    s += 1
+            # check if left of the board is clear 
+            w = 1
+            while self.board[r][c-w] == "-" or self.board[r][c-w].isupper() and c-w != 0:
+                moves.append(GameState.rank_file(r, c-w))
+                count += 1
+                if self.board[r][c-w].isupper():
+                    break
+                else:
+                    w += 1
+            # check if right of the board is clear 
+            e = 1
+            while self.board[r][c+e] == "-" or self.board[r][c+e].isupper() and c+e != 9:
+                moves.append(GameState.rank_file(r, c+e))
+                count += 1
+                if self.board[r][c+e].isupper():
+                    break
+                else:
+                    e += 1
+            # check if top left is clear
+            n = 1
+            w = 1
+            while self.board[r+n][c-w] == "-" or self.board[r+n][c-w].isupper() and r+n != 9 and c-w != 0:
+                moves.append(GameState.rank_file(r+n, c-w))
+                count += 1
+                if self.board[r+n][c-w].isupper():
+                    break
+                else:
+                    n += 1
+                    w += 1
+            # check if top right is clear
+            n = 1
+            e = 1
+            while self.board[r+n][c+e] == "-" or self.board[r+n][c+e].isupper() and r+n != 9 and c+e != 9:
+                moves.append(GameState.rank_file(r+n, c+e))
+                count += 1
+                if self.board[r+n][c+e].isupper():
+                    break
+                else:
+                    n += 1
+                    e += 1
+            # check if bottom left is clear
+            s = 1
+            w = 1
+            while self.board[r-s][c-w] == "-" or self.board[r-s][c-w].isupper() and r-s != 0 and c-w != 0:
+                moves.append(GameState.rank_file(r-s, c-w))
+                count += 1
+                if self.board[r-s][c-w].isupper():
+                    break
+                else:
+                    s += 1
+                    w += 1
+            # check if bottom left is clear
+            s = 1
+            w = 1
+            while self.board[r-s][c+w] == "-" or self.board[r-s][c+w].isupper() and r-s != 0 and c+w != 9:
+                moves.append(GameState.rank_file(r-s, c+w))
+                count += 1
+                if self.board[r-s][c+w].isupper():
+                    break
+                else:
+                    s += 1
+                    w += 1
+            # append the moves
+            while i < count:
+                piece_moved.append("q")
+                start_sq.append((r, c))
+                i += 1
     
-    # pawn moves
+    # king moves
     def get_king_moves(self, r, c, moves, piece_moved, start_sq):
         pass
     
@@ -498,6 +677,7 @@ class GameState():
                                 ifile = GameState.rank_file(start_sq[i][0], start_sq[i][1])[0]
                                 jfile = GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]
                                 if ifile == jfile:
+                                    check = False
                                     for k in range(0, len(moves)):
                                         if i != k and j != k:
                                             if moves[i] == moves[k]:
@@ -505,12 +685,17 @@ class GameState():
                                                     # check if a piece was captured
                                                     if self.board[board_sq[i][1]][board_sq[i][0]].islower():
                                                         pgn.append(piece_moved[i] + rank_file[i] + "x" + moves[i])
+                                                        check = True
                                                         flag = True
                                                         break
                                                     else:
                                                         pgn.append(piece_moved[i] + rank_file[i] + moves[i])
+                                                        check = True 
                                                         flag = True
                                                         break
+                                    # check if you broke the for loop
+                                    if check:
+                                        break
                                     # check if a piece was captured
                                     if self.board[board_sq[i][1]][board_sq[i][0]].islower():
                                         pgn.append(piece_moved[i] + rank_file[i][1] + "x" + moves[i])
@@ -521,6 +706,7 @@ class GameState():
                                         flag = True
                                         break
                                 else:
+                                    check = False
                                     for k in range(0, len(moves)):
                                         if i != k and j != k:
                                             if moves[i] == moves[k]:
@@ -528,12 +714,17 @@ class GameState():
                                                     # check if a piece was captured
                                                     if self.board[board_sq[i][1]][board_sq[i][0]].islower():
                                                         pgn.append(piece_moved[i] + rank_file[i] + "x" + moves[i])
+                                                        check = True
                                                         flag = True
                                                         break
                                                     else:
                                                         pgn.append(piece_moved[i] + rank_file[i] + moves[i])
+                                                        check = True
                                                         flag = True
                                                         break
+                                    # check if you broke the for loop
+                                    if check:
+                                        break
                                     # check if a piece was caputred
                                     if self.board[board_sq[i][1]][board_sq[i][0]].islower():
                                         if piece_moved[i] == "P":
