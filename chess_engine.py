@@ -281,13 +281,12 @@ class GameState():
             rank_file.append(GameState.rank_file(start_sq[i][0], start_sq[i][1]))
         for i in range(0, len(moves)):
             board_sq.append(GameState.row_col(moves[i][1], moves[i][0]))
-        
-        color = True if self.white_to_move else False
-        
+
         pgn = []
         for i in range(0, len(moves)):
             flag = False
-            end_sq_val = self.board[board_sq[i][1]][board_sq[i][0]]
+            end_sq_val = True if self.board[board_sq[i][1]][board_sq[i][0]] != "-" else False
+            pawn_moved = True if piece_moved[i] == "P" or piece_moved[i] == "p" else False
             for j in range(0, len(moves)):
                 # check if indexes are the same
                 # are the moves to the same square?
@@ -301,7 +300,7 @@ class GameState():
                         for k in range(0, len(moves)):
                             if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
                                 # check if a piece was captured
-                                if end_sq_val != "-":
+                                if end_sq_val:
                                     pgn.append(piece_moved[i].upper() + rank_file[i] + "x" + moves[i])
                                     check = True
                                     flag = True
@@ -315,7 +314,7 @@ class GameState():
                         if check:
                             break
                         # check if a piece was captured
-                        if end_sq_val != "-":
+                        if end_sq_val:
                             pgn.append(piece_moved[i].upper() + rank_file[i][1] + "x" + moves[i])
                             flag = True
                             break
@@ -328,7 +327,7 @@ class GameState():
                         for k in range(0, len(moves)):
                             if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
                                 # check if a piece was captured
-                                if end_sq_val != "-":
+                                if end_sq_val:
                                     pgn.append(piece_moved[i].upper() + rank_file[i] + "x" + moves[i])
                                     check = True
                                     flag = True
@@ -342,8 +341,8 @@ class GameState():
                         if check:
                             break
                         # check if a piece was caputred
-                        if end_sq_val != "-":
-                            if piece_moved[i] == "P" or piece_moved[i] == "p":
+                        if end_sq_val:
+                            if pawn_moved:
                                 pgn.append(rank_file[i][0] + "x" + moves[i])
                                 flag = True
                                 break
@@ -357,20 +356,20 @@ class GameState():
                             break
             if not flag:
                 # check if pawn was moved
-                if piece_moved[i] == "P" or piece_moved[i] == "p":
+                if pawn_moved:
                     # check if rank is 2
                     # promotion
                     
                     
                     
                     # check if a piece was captured
-                    if end_sq_val != "-":
+                    if end_sq_val:
                         pgn.append(rank_file[i][0] + "x" + moves[i])
                     else:
                         pgn.append(moves[i])
                 else:
                     # check if a piece was captured
-                    if end_sq_val != "-":
+                    if end_sq_val:
                         pgn.append(piece_moved[i].upper() + "x" + moves[i])
                     else:
                         pgn.append(piece_moved[i].upper() + moves[i])
