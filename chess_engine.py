@@ -282,105 +282,99 @@ class GameState():
         for i in range(0, len(moves)):
             board_sq.append(GameState.row_col(moves[i][1], moves[i][0]))
         
+        color = True if self.white_to_move else False
+        
         pgn = []
-        if self.white_to_move:
-            for i in range(0, len(moves)):
-                flag = False
-                for j in range(0, len(moves)):
-                    # check if indexes are the same
-                    if i != j:
-                        # are the moves to the same square?
-                        if moves[i] == moves[j]:
-                            # the two pieces that are moving there the same?
-                            if piece_moved[i] == piece_moved[j]:
-                                # the two pieces that are moved on the same file?
-                                ifile = GameState.rank_file(start_sq[i][0], start_sq[i][1])[0]
-                                jfile = GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]
-                                if ifile == jfile:
-                                    check = False
-                                    for k in range(0, len(moves)):
-                                        if i != k and j != k:
-                                            if moves[i] == moves[k]:
-                                                if piece_moved[i] == piece_moved[k]:
-                                                    # check if a piece was captured
-                                                    if self.board[board_sq[i][1]][board_sq[i][0]].islower():
-                                                        pgn.append(piece_moved[i] + rank_file[i] + "x" + moves[i])
-                                                        check = True
-                                                        flag = True
-                                                        break
-                                                    else:
-                                                        pgn.append(piece_moved[i] + rank_file[i] + moves[i])
-                                                        check = True 
-                                                        flag = True
-                                                        break
-                                    # check if you broke the for loop
-                                    if check:
-                                        break
-                                    # check if a piece was captured
-                                    if self.board[board_sq[i][1]][board_sq[i][0]].islower():
-                                        pgn.append(piece_moved[i] + rank_file[i][1] + "x" + moves[i])
-                                        flag = True
-                                        break
-                                    else:
-                                        pgn.append(piece_moved[i] + rank_file[i][1] + moves[i])
-                                        flag = True
-                                        break
+        for i in range(0, len(moves)):
+            flag = False
+            end_sq_val = self.board[board_sq[i][1]][board_sq[i][0]]
+            for j in range(0, len(moves)):
+                # check if indexes are the same
+                # are the moves to the same square?
+                # the two pieces that are moving there the same?
+                if i != j and moves[i] == moves[j] and piece_moved[i] == piece_moved[j]:
+                    # the two pieces that are moved on the same file?
+                    ifile = GameState.rank_file(start_sq[i][0], start_sq[i][1])[0]
+                    jfile = GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]
+                    if ifile == jfile:
+                        check = False
+                        for k in range(0, len(moves)):
+                            if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
+                                # check if a piece was captured
+                                if end_sq_val != "-":
+                                    pgn.append(piece_moved[i].upper() + rank_file[i] + "x" + moves[i])
+                                    check = True
+                                    flag = True
+                                    break
                                 else:
-                                    check = False
-                                    for k in range(0, len(moves)):
-                                        if i != k and j != k:
-                                            if moves[i] == moves[k]:
-                                                if piece_moved[i] == piece_moved[k]:
-                                                    # check if a piece was captured
-                                                    if self.board[board_sq[i][1]][board_sq[i][0]].islower():
-                                                        pgn.append(piece_moved[i] + rank_file[i] + "x" + moves[i])
-                                                        check = True
-                                                        flag = True
-                                                        break
-                                                    else:
-                                                        pgn.append(piece_moved[i] + rank_file[i] + moves[i])
-                                                        check = True
-                                                        flag = True
-                                                        break
-                                    # check if you broke the for loop
-                                    if check:
-                                        break
-                                    # check if a piece was caputred
-                                    if self.board[board_sq[i][1]][board_sq[i][0]].islower():
-                                        if piece_moved[i] == "P":
-                                            pgn.append(rank_file[i][0] + "x" + moves[i])
-                                            flag = True
-                                            break
-                                        else:
-                                            pgn.append(piece_moved[i] + rank_file[i][0] + "x" + moves[i])
-                                            flag = True
-                                            break
-                                    else:
-                                        pgn.append(piece_moved[i] + rank_file[i][0] + moves[i])
-                                        flag = True
-                                        break
-                if not flag:
-                    # check if pawn was moved
-                    if piece_moved[i] == "P":
-                        # check if rank is 2
-                        # promotion
-                        
-                        
-                        
+                                    pgn.append(piece_moved[i].upper() + rank_file[i] + moves[i])
+                                    check = True 
+                                    flag = True
+                                    break
+                        # check if you broke the for loop
+                        if check:
+                            break
                         # check if a piece was captured
-                        if self.board[board_sq[i][1]][board_sq[i][0]].islower():
-                            pgn.append(rank_file[i][0] + "x" + moves[i])
+                        if end_sq_val != "-":
+                            pgn.append(piece_moved[i].upper() + rank_file[i][1] + "x" + moves[i])
+                            flag = True
+                            break
                         else:
-                            pgn.append(moves[i])
+                            pgn.append(piece_moved[i].upper() + rank_file[i][1] + moves[i])
+                            flag = True
+                            break
                     else:
-                        # check if a piece was captured
-                        if self.board[board_sq[i][1]][board_sq[i][0]].islower():
-                            pgn.append(piece_moved[i] + "x" + moves[i])
+                        check = False
+                        for k in range(0, len(moves)):
+                            if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
+                                # check if a piece was captured
+                                if end_sq_val != "-":
+                                    pgn.append(piece_moved[i].upper() + rank_file[i] + "x" + moves[i])
+                                    check = True
+                                    flag = True
+                                    break
+                                else:
+                                    pgn.append(piece_moved[i].upper() + rank_file[i] + moves[i])
+                                    check = True
+                                    flag = True
+                                    break
+                        # check if you broke the for loop
+                        if check:
+                            break
+                        # check if a piece was caputred
+                        if end_sq_val != "-":
+                            if piece_moved[i] == "P" or piece_moved[i] == "p":
+                                pgn.append(rank_file[i][0] + "x" + moves[i])
+                                flag = True
+                                break
+                            else:
+                                pgn.append(piece_moved[i].upper() + rank_file[i][0] + "x" + moves[i])
+                                flag = True
+                                break
                         else:
-                            pgn.append(piece_moved[i] + moves[i])
-                
-                # added in if statement to check for check and checkmate
-        else:
-            pass
+                            pgn.append(piece_moved[i].upper() + rank_file[i][0] + moves[i])
+                            flag = True
+                            break
+            if not flag:
+                # check if pawn was moved
+                if piece_moved[i] == "P" or piece_moved[i] == "p":
+                    # check if rank is 2
+                    # promotion
+                    
+                    
+                    
+                    # check if a piece was captured
+                    if end_sq_val != "-":
+                        pgn.append(rank_file[i][0] + "x" + moves[i])
+                    else:
+                        pgn.append(moves[i])
+                else:
+                    # check if a piece was captured
+                    if end_sq_val != "-":
+                        pgn.append(piece_moved[i].upper() + "x" + moves[i])
+                    else:
+                        pgn.append(piece_moved[i].upper() + moves[i])
+            
+            # added in if statement to check for check and checkmate
         return pgn
     
