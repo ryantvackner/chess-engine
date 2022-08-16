@@ -14,7 +14,7 @@ class GameState():
             ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
             ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
-            ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
+            ["5", "-", "N", "-", "-", "Q", "-", "-", "-", "5"],
             ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
             ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
@@ -287,73 +287,32 @@ class GameState():
             flag = False
             end_sq_val = True if self.board[board_sq[i][1]][board_sq[i][0]] != "-" else False
             pawn_moved = True if piece_moved[i] == "P" or piece_moved[i] == "p" else False
+            take = "x" if end_sq_val else ""
+            piece = "" if pawn_moved else piece_moved[i].upper()
             for j in range(0, len(moves)):
                 # check if indexes are the same
                 # are the moves to the same square?
                 # the two pieces that are moving there the same?
                 if i != j and moves[i] == moves[j] and piece_moved[i] == piece_moved[j]:
+                    flag = True
                     # the two pieces that are moved on the same file?
                     ifile = GameState.rank_file(start_sq[i][0], start_sq[i][1])[0]
                     jfile = GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]
-                    if ifile == jfile:
-                        check = False
-                        for k in range(0, len(moves)):
-                            if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
-                                # check if a piece was captured
-                                if end_sq_val:
-                                    pgn.append(piece_moved[i].upper() + rank_file[i] + "x" + moves[i])
-                                    check = True
-                                    flag = True
-                                    break
-                                else:
-                                    pgn.append(piece_moved[i].upper() + rank_file[i] + moves[i])
-                                    check = True 
-                                    flag = True
-                                    break
-                        # check if you broke the for loop
-                        if check:
+                    file_or_row = 1 if ifile == jfile else 0
+                    check = False
+                    for k in range(0, len(moves)):
+                        if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
+                            pgn.append(piece_moved[i].upper() + rank_file[i] + take + moves[i])
+                            check = True
                             break
-                        # check if a piece was captured
-                        if end_sq_val:
-                            pgn.append(piece_moved[i].upper() + rank_file[i][1] + "x" + moves[i])
-                            flag = True
-                            break
-                        else:
-                            pgn.append(piece_moved[i].upper() + rank_file[i][1] + moves[i])
-                            flag = True
-                            break
-                    else:
-                        check = False
-                        for k in range(0, len(moves)):
-                            if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
-                                # check if a piece was captured
-                                if end_sq_val:
-                                    pgn.append(piece_moved[i].upper() + rank_file[i] + "x" + moves[i])
-                                    check = True
-                                    flag = True
-                                    break
-                                else:
-                                    pgn.append(piece_moved[i].upper() + rank_file[i] + moves[i])
-                                    check = True
-                                    flag = True
-                                    break
-                        # check if you broke the for loop
-                        if check:
-                            break
-                        # check if a piece was caputred
-                        if end_sq_val:
-                            if pawn_moved:
-                                pgn.append(rank_file[i][0] + "x" + moves[i])
-                                flag = True
-                                break
-                            else:
-                                pgn.append(piece_moved[i].upper() + rank_file[i][0] + "x" + moves[i])
-                                flag = True
-                                break
-                        else:
-                            pgn.append(piece_moved[i].upper() + rank_file[i][0] + moves[i])
-                            flag = True
-                            break
+                    # check if you broke the for loop
+                    if check:
+                        break
+                    # append pgn 
+                    pgn.append(piece + rank_file[i][file_or_row] + take + moves[i])
+                    break
+
+                    
             if not flag:
                 # check if pawn was moved
                 if pawn_moved:
@@ -364,13 +323,13 @@ class GameState():
                     
                     # check if a piece was captured
                     if end_sq_val:
-                        pgn.append(rank_file[i][0] + "x" + moves[i])
+                        pgn.append(rank_file[i][0] + take + moves[i])
                     else:
                         pgn.append(moves[i])
                 else:
                     # check if a piece was captured
                     if end_sq_val:
-                        pgn.append(piece_moved[i].upper() + "x" + moves[i])
+                        pgn.append(piece_moved[i].upper() + take + moves[i])
                     else:
                         pgn.append(piece_moved[i].upper() + moves[i])
             
