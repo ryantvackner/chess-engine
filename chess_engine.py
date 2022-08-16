@@ -14,9 +14,9 @@ class GameState():
             ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
             ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
-            ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
+            ["5", "-", "-", "N", "-", "-", "-", "N", "-", "5"],
             ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
-            ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
+            ["3", "-", "-", "N", "-", "-", "-", "-", "-", "3"],
             ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
             ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
@@ -166,99 +166,18 @@ class GameState():
             
     # knight moves
     def get_knight_moves(self, r, c, moves, piece_moved, start_sq):
-        # white rook
-        if self.white_to_move:
-            i = 0
-            count = 0
-            if r != 1:
-                if r != 2:
-                    # knight top left move
-                    if  c >= 2 and (self.board[r-2][c-1] == "-" or self.board[r-2][c-1].islower()):
-                        moves.append(GameState.rank_file(r-2, c-1))
-                        count += 1
-                    # knight top right move
-                    if  c <= 7 and (self.board[r-2][c+1] == "-" or self.board[r-2][c+1].islower()):
-                        moves.append(GameState.rank_file(r-2, c+1))
-                        count += 1
-                # Knight left top move
-                if c >= 3 and (self.board[r-1][c-2] == "-" or self.board[r-1][c-2].islower()):
-                    moves.append(GameState.rank_file(r-1, c-2))
-                    count += 1
-                # knight right top move
-                if  c <= 6 and (self.board[r-1][c+2] == "-" or self.board[r-1][c+2].islower()):
-                    moves.append(GameState.rank_file(r-1, c+2))
-                    count += 1
-
-            if r != 8:
-                if r != 7:
-                    # knight bottom right move
-                    if  c <= 7 and (self.board[r+2][c+1] == "-" or self.board[r+2][c+1].islower()):
-                        moves.append(GameState.rank_file(r+2, c+1))
-                        count += 1
-                    # knight bottom left move
-                    if  c >= 2 and (self.board[r+2][c-1] == "-" or self.board[r+2][c-1].islower()):
-                        moves.append(GameState.rank_file(r+2, c-1))
-                        count += 1
-                # knight right bottom move
-                if  c <= 6 and (self.board[r+1][c+2] == "-" or self.board[r+1][c+2].islower()):
-                    moves.append(GameState.rank_file(r+1, c+2))
-                    count += 1
-                # knight left bottom move
-                if  c >= 3 and (self.board[r+1][c-2] == "-" or self.board[r+1][c-2].islower()):
-                    moves.append(GameState.rank_file(r+1, c-2))
-                    count += 1
-                    
-            while i < count:
-                piece_moved.append("N")
-                start_sq.append((r, c))
-                i += 1
-                    
-        # black knight
-        else:
-            i = 0
-            count = 0
-            if r != 1:
-                if r != 2:
-                    # knight top left move
-                    if  c >= 2 and (self.board[r-2][c-1] == "-" or self.board[r-2][c-1].isupper()):
-                        moves.append(GameState.rank_file(r-2, c-1))
-                        count += 1
-                    # knight top right move
-                    if  c <= 7 and (self.board[r-2][c+1] == "-" or self.board[r-2][c+1].isupper()):
-                        moves.append(GameState.rank_file(r-2, c+1))
-                        count += 1
-                # Knight left top move
-                if c >= 3 and (self.board[r-1][c-2] == "-" or self.board[r-1][c-2].isupper()):
-                    moves.append(GameState.rank_file(r-1, c-2))
-                    count += 1
-                # knight right top move
-                if  c <= 6 and (self.board[r-1][c+2] == "-" or self.board[r-1][c+2].isupper()):
-                    moves.append(GameState.rank_file(r-1, c+2))
-                    count += 1
-
-            if r != 8:
-                if r != 7:
-                    # knight bottom right move
-                    if  c <= 7 and (self.board[r+2][c+1] == "-" or self.board[r+2][c+1].isupper()):
-                        moves.append(GameState.rank_file(r+2, c+1))
-                        count += 1
-                    # knight bottom left move
-                    if  c >= 2 and (self.board[r+2][c-1] == "-" or self.board[r+2][c-1].isupper()):
-                        moves.append(GameState.rank_file(r+2, c-1))
-                        count += 1
-                # knight right bottom move
-                if  c <= 6 and (self.board[r+1][c+2] == "-" or self.board[r+1][c+2].isupper()):
-                    moves.append(GameState.rank_file(r+1, c+2))
-                    count += 1
-                # knight left bottom move
-                if  c >= 3 and (self.board[r+1][c-2] == "-" or self.board[r+1][c-2].isupper()):
-                    moves.append(GameState.rank_file(r+1, c-2))
-                    count += 1
-                
-                while i < count:
-                    piece_moved.append("n")
+        direction = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
+        color = True if self.white_to_move else False
+        for d in direction:
+            end_row = r + d[0]
+            end_col = c + d[1]
+            if 1 <= end_row < 9 and 1 <= end_col < 9:
+                end_piece = self.board[end_row][end_col]
+                end_piece_color = self.board[end_row][end_col].islower() 
+                if end_piece == "-" or end_piece_color == color:
+                    moves.append(GameState.rank_file(end_row, end_col))
+                    piece_moved.append("N" if color else "n")
                     start_sq.append((r, c))
-                    i += 1
     
     # bishop moves
     def get_bishop_moves(self, r, c, moves, piece_moved, start_sq):
