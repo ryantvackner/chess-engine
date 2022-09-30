@@ -143,7 +143,6 @@ class GameState():
                             rank_file_move.append(moves[3][i])
             # double check
             else:
-                print(moves)
                 for i in range(len(moves[0]) - 1, -1, -1):
                     if self.white_to_move:
                         if moves[1][i] == "K":
@@ -186,49 +185,91 @@ class GameState():
         pins = []
         checks = []
         in_check = False
+        
         color = True if self.white_to_move else False
-        if self.white_to_move:
+        
+        # whites turn to move
+        if color:
             start_row = self.white_king_location[0]
             start_col = self.white_king_location[1]
+            directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
+            for j in range(len(directions)):
+                d = directions[j]
+                possible_pin = ()
+                for i in range(1, 8):
+                    end_row = start_row + d[0] * i
+                    end_col = start_col + d[1] * i
+                    if 1 <= end_row < 9 and 1 <= end_col < 9:
+                        end_piece = self.board[end_row][end_col]
+                        end_piece_color = self.board[end_row][end_col].isupper()
+                        if end_piece_color == color and end_piece.upper() != "K":
+                            if possible_pin == ():
+                                possible_pin = (end_row, end_col, d[0], d[1])
+                            else:
+                                break
+                        elif end_piece != "-":
+                            type = end_piece.upper()
+                            if (0 <= j <= 3 and type == "R") or \
+                                    (4 <= j <= 7 and type == "B") or \
+                                    (i == 1 and type == "P" and ((end_piece_color and 6 <= j <= 7) or (not end_piece_color and 4 <= j <= 5))) or \
+                                    (type == "Q") or (i == 1 and type == "K"):
+                                # no piece blocking so check
+                                if possible_pin == ():
+                                    in_check = True
+                                    checks.append((end_row, end_col, d[0], d[1]))
+                                    break
+                                # piece blocking so pin
+                                else:
+                                    pins.append(possible_pin)
+                                    break
+                            # enemy piece not applying check
+                            else:
+                                break
+                    # off board
+                    else:
+                        break
+                    
+        # blacks turn to moves
         else:
             start_row = self.black_king_location[0]
             start_col = self.black_king_location[1]
-        directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
-        for j in range(len(directions)):
-            d = directions[j]
-            possible_pin = ()
-            for i in range(1, 8):
-                end_row = start_row + d[0] * i
-                end_col = start_col + d[1] * i
-                if 1 <= end_row < 9 and 1 <= end_col < 9:
-                    end_piece = self.board[end_row][end_col]
-                    end_piece_color = self.board[end_row][end_col].isupper()
-                    if end_piece_color == color and end_piece.upper() != "K":
-                        if possible_pin == ():
-                            possible_pin = (end_row, end_col, d[0], d[1])
-                        else:
-                            break
-                    elif end_piece != "-":
-                        type = end_piece.upper()
-                        if (0 <= j <= 3 and type == "R") or \
-                                (4 <= j <= 7 and type == "B") or \
-                                (i == 1 and type == "P" and ((end_piece_color and 6 <= j <= 7) or (not end_piece_color and 4 <= j <= 5))) or \
-                                (type == "Q") or (i == 1 and type == "K"):
-                            # no piece blocking so check
+            directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
+            for j in range(len(directions)):
+                d = directions[j]
+                possible_pin = ()
+                for i in range(1, 8):
+                    end_row = start_row + d[0] * i
+                    end_col = start_col + d[1] * i
+                    if 1 <= end_row < 9 and 1 <= end_col < 9:
+                        end_piece = self.board[end_row][end_col]
+                        end_piece_color = self.board[end_row][end_col].islower()
+                        if end_piece_color != color and end_piece.lower() != "k":
                             if possible_pin == ():
-                                in_check = True
-                                checks.append((end_row, end_col, d[0], d[1]))
-                                break
-                            # piece blocking so pin
+                                possible_pin = (end_row, end_col, d[0], d[1])
                             else:
-                                pins.append(possible_pin)
                                 break
-                        # enemy piece not applying check
-                        else:
-                            break
-                # off board
-                else:
-                    break
+                        elif end_piece != "-":
+                            type = end_piece.upper()
+                            if (0 <= j <= 3 and type == "R") or \
+                                    (4 <= j <= 7 and type == "B") or \
+                                    (i == 1 and type == "P" and ((end_piece_color and 6 <= j <= 7) or (not end_piece_color and 4 <= j <= 5))) or \
+                                    (type == "Q") or (i == 1 and type == "K"):
+                                # no piece blocking so check
+                                if possible_pin == ():
+                                    in_check = True
+                                    checks.append((end_row, end_col, d[0], d[1]))
+                                    break
+                                # piece blocking so pin
+                                else:
+                                    pins.append(possible_pin)
+                                    break
+                            # enemy piece not applying check
+                            else:
+                                break
+                    # off board
+                    else:
+                        break          
+        
 
         # check knight moves
         knight_moves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
@@ -366,7 +407,6 @@ class GameState():
     def get_knight_moves(self, r, c, moves, piece_moved, start_sq):
         # pinned piece check
         piece_pinned = False
-        pin_direction = ()
         for i in range(len(self.pins)-1, -1, -1):
             if self.pins[i][0] == r and self.pins[i][1] == c:
                 piece_pinned = True
@@ -584,5 +624,3 @@ class GameState():
 
             # added in if statement to check for check and checkmate
         return pgn
-
-
