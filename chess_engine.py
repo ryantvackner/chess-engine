@@ -95,7 +95,6 @@ class GameState():
             start_sq = []
             rank_file_move = []
             # only 1 check, block or move king
-            print(self.checks)
             if len(self.checks) == 1:
                 check = self.checks[0]
                 check_row = check[0]
@@ -314,7 +313,7 @@ class GameState():
                         count += 1
             # black pawn capture right
             if c+1 <= 8:
-                if self.board[r+1][c+1].islower():
+                if self.board[r+1][c+1].isupper():
                     if not piece_pinned or pin_direction == (1, 1):
                         moves.append(GameState.rank_file(r+1, c+1))
                         count += 1
@@ -585,4 +584,5 @@ class GameState():
 
             # added in if statement to check for check and checkmate
         return pgn
+
 
