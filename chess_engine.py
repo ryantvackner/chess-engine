@@ -12,14 +12,14 @@ class GameState():
         # initialize the board
         self.board = [
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
-            ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
-            ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
+            ["8", "-", "-", "-", "-", "k", "-", "-", "-", "8"],
+            ["7", "-", "-", "-", "-", "-", "-", "-", "-", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
             ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
             ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
-            ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
-            ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
+            ["2", "p", "-", "p", "-", "-", "-", "p", "-", "2"],
+            ["1", "-", "N", "-", "-", "K", "-", "-", "-", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
 
@@ -81,13 +81,19 @@ class GameState():
         start_sq = []
         rank_file_move = []
         moves = []
+        
+        # get pins and checks
         self.in_check, self.pins, self.checks = self.check_for_pins_and_checks()
+        
+        # whose move is it?
         if self.white_to_move:
             king_row = self.white_king_location[0]
             king_col = self.white_king_location[1]
         else:
             king_row = self.black_king_location[0]
             king_col = self.black_king_location[1]
+        
+        # if we are in check, limit the total number of moves
         if self.in_check:
             moves = self.get_all_possible_moves()
             pgn = []
@@ -296,6 +302,7 @@ class GameState():
         # pinned piece check
         piece_pinned = False
         pin_direction = ()
+        
         for i in range(len(self.pins)-1, -1, -1):
             if self.pins[i][0] == r and self.pins[i][1] == c:
                 piece_pinned = True
@@ -310,24 +317,52 @@ class GameState():
             # white pawn moves forward one space
             if self.board[r-1][c] == "-":
                 if not piece_pinned or pin_direction == (-1, 0):
-                    moves.append(GameState.rank_file(r-1, c))
-                    count += 1
-                    # white pawn moves forward two spaces on first turn
-                    if r == 7 and self.board[r-2][c] == "-":
-                        moves.append(GameState.rank_file(r-2, c))
+                    if r-1 == 1:
+                        for z in range(4):
+                            moves.append(GameState.rank_file(r-1, c))
+                            start_sq.append((r, c))
+                        piece_moved.append("Q")
+                        piece_moved.append("R")
+                        piece_moved.append("B")
+                        piece_moved.append("N")
+                    else:
+                        moves.append(GameState.rank_file(r-1, c))
                         count += 1
+                        # white pawn moves forward two spaces on first turn
+                        if r == 7 and self.board[r-2][c] == "-":
+                            moves.append(GameState.rank_file(r-2, c))
+                            count += 1
             # white pawn capture left
             if c-1 >= 1:
                 if self.board[r-1][c-1].islower():
                     if not piece_pinned or pin_direction == (-1, -1):
-                        moves.append(GameState.rank_file(r-1, c-1))
-                        count += 1
+                        if r-1 == 1:
+                            for z in range(4):
+                                moves.append(GameState.rank_file(r-1, c-1))
+                                start_sq.append((r, c))
+                            piece_moved.append("Q")
+                            piece_moved.append("R")
+                            piece_moved.append("B")
+                            piece_moved.append("N")
+                        else:
+                            moves.append(GameState.rank_file(r-1, c-1))
+                            count += 1
             # white pawn capture right
             if c+1 <= 8:
                 if self.board[r-1][c+1].islower():
                     if not piece_pinned or pin_direction == (-1, 1):
-                        moves.append(GameState.rank_file(r-1, c+1))
-                        count += 1
+                        if r-1 == 1:
+                            for z in range(4):
+                                moves.append(GameState.rank_file(r-1, c+1))
+                                start_sq.append((r, c))
+                            piece_moved.append("Q")
+                            piece_moved.append("R")
+                            piece_moved.append("B")
+                            piece_moved.append("N")
+                        else:
+                            moves.append(GameState.rank_file(r-1, c+1))
+                            count += 1
+            # append piece moved
             while i < count:
                 piece_moved.append("P")
                 start_sq.append((r, c))
@@ -340,24 +375,51 @@ class GameState():
             # black pawn moves forward one space
             if self.board[r+1][c] == "-":
                 if not piece_pinned or pin_direction == (1, 0):
-                    moves.append(GameState.rank_file(r+1, c))
-                    count += 1
-                    # black pawn moves forward two spaces on first turn
-                    if r == 2 and self.board[r+2][c] == "-":
-                        moves.append(GameState.rank_file(r+2, c))
+                    if r+1 == 8:
+                        for z in range(4):
+                            moves.append(GameState.rank_file(r+1, c))
+                            start_sq.append((r, c))
+                        piece_moved.append("q")
+                        piece_moved.append("r")
+                        piece_moved.append("b")
+                        piece_moved.append("n")
+                    else:
+                        moves.append(GameState.rank_file(r+1, c))
                         count += 1
+                        # black pawn moves forward two spaces on first turn
+                        if r == 2 and self.board[r+2][c] == "-":
+                            moves.append(GameState.rank_file(r+2, c))
+                            count += 1
             # black pawn capture left
             if c-1 >= 1:
                 if self.board[r+1][c-1].isupper():
                     if not piece_pinned or pin_direction == (1, -1):
-                        moves.append(GameState.rank_file(r+1, c-1))
-                        count += 1
+                        if r+1 == 8:
+                            for z in range(4):
+                                moves.append(GameState.rank_file(r+1, c-1))
+                                start_sq.append((r, c))
+                            piece_moved.append("q")
+                            piece_moved.append("r")
+                            piece_moved.append("b")
+                            piece_moved.append("n")
+                        else:
+                            moves.append(GameState.rank_file(r+1, c-1))
+                            count += 1
             # black pawn capture right
             if c+1 <= 8:
                 if self.board[r+1][c+1].isupper():
                     if not piece_pinned or pin_direction == (1, 1):
-                        moves.append(GameState.rank_file(r+1, c+1))
-                        count += 1
+                        if r+1 == 8:
+                            for z in range(4):
+                                moves.append(GameState.rank_file(r+1, c+1))
+                                start_sq.append((r, c))
+                            piece_moved.append("q")
+                            piece_moved.append("r")
+                            piece_moved.append("b")
+                            piece_moved.append("n")
+                        else:
+                            moves.append(GameState.rank_file(r+1, c+1))
+                            count += 1
             while i < count:
                 piece_moved.append("p")
                 start_sq.append((r, c))
@@ -578,7 +640,9 @@ class GameState():
         for i in range(0, len(moves)):
             flag = False
             end_sq_val = True if self.board[board_sq[i][0]][board_sq[i][1]] != "-" else False
-            pawn_moved = True if piece_moved[i] == "P" or piece_moved[i] == "p" else False
+            pawn_moved = True if self.board[start_sq[i][0]][start_sq[i][1]] == "P" or self.board[start_sq[i][0]][start_sq[i][1]] == "p" else False
+            is_promotion = True if pawn_moved and (piece_moved[i] != "P" or piece_moved[i] != "p") else False
+            promotion = "=" + str(piece_moved[i].upper()) if is_promotion else ""
             take = "x" if end_sq_val else ""
             piece = "" if pawn_moved else piece_moved[i].upper()
             for j in range(0, len(moves)):
@@ -601,7 +665,7 @@ class GameState():
                     if check:
                         break
                     # append pgn
-                    pgn.append(piece + rank_file[i][file_or_row] + take + moves[i])
+                    pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + promotion)
                     break
 
 
@@ -615,9 +679,9 @@ class GameState():
 
                     # check if a piece was captured
                     if end_sq_val:
-                        pgn.append(rank_file[i][0] + take + moves[i])
+                        pgn.append(rank_file[i][0] + take + moves[i] + promotion)
                     else:
-                        pgn.append(moves[i])
+                        pgn.append(moves[i] + promotion)
                 else:
                     pgn.append(piece + take + moves[i])
 
