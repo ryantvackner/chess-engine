@@ -12,13 +12,13 @@ class GameState():
         # initialize the board
         self.board = [
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
-            ["8", "-", "n", "-", "n", "k", "-", "-", "-", "8"],
-            ["7", "-", "-", "-", "-", "-", "-", "Q", "-", "7"],
+            ["8", "-", "-", "-", "-", "k", "-", "-", "-", "8"],
+            ["7", "-", "-", "-", "-", "-", "-", "-", "-", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
             ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
-            ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
+            ["4", "-", "-", "-", "p", "-", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
-            ["2", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
+            ["2", "-", "-", "-", "-", "P", "-", "-", "-", "2"],
             ["1", "-", "-", "-", "-", "K", "-", "-", "-", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
@@ -46,6 +46,7 @@ class GameState():
         self.checks = []
         self.checkmate = False
         self.stalemate = False
+        self.enpassant_possible = ()
 
         # white to move
         self.white_to_move = True
@@ -53,10 +54,11 @@ class GameState():
         # move log (PGN)
         self.move_log = []
 
-    def make_move(self, move, piece, start_sq):
+    def make_move(self, move, piece, start_sq):   
+        white_enpassant = False
         # find the starting square using the move notation input
         # make it blank -
-        move_sq = GameState.row_col(move[1], move[0])
+        move_sq = GameState.row_col(move[1], move[0])        
         self.board[start_sq[0]][start_sq[1]] = "-"
 
         # set piece moved to correct location
@@ -64,6 +66,16 @@ class GameState():
 
         # add move to move log using proper chess notation
         self.move_log.append(move)
+        
+        # take the pawn for en passant
+        if move_sq == self.enpassant_possible:
+            if self.white_to_move:
+                self.board[move_sq[0]+1][move_sq[1]] = "-"
+            else:
+                self.board[move_sq[0]-1][move_sq[1]] = "-"
+            self.enpassant_possible = ()
+        elif white_enpassant == self.white_to_move:
+            self.enpassant_possible = ()
 
         # swap whos turn it is to move
         self.white_to_move = not self.white_to_move
@@ -73,6 +85,21 @@ class GameState():
             self.white_king_location = (move_sq[0], move_sq[1])
         elif piece == "k":
             self.black_king_location = (move_sq[0], move_sq[1])
+            
+        # check if en passent is possible
+        # white pawn
+        if piece == "P":
+            if start_sq[0] == 7 and move_sq[0] == 5:
+                self.enpassant_possible = (6, start_sq[1])
+                white_enpassant = False
+        # black pawn 
+        elif piece == "p":
+            if start_sq[0] == 2 and move_sq[0] == 4:
+                self.enpassant_possible = (3, start_sq[1])
+                white_enpassant = True
+
+            
+                
 
     # get all valid moves, can't put yourself in check
     def get_valid_moves(self):
@@ -340,6 +367,11 @@ class GameState():
                         else:
                             moves.append(GameState.rank_file(r-1, c-1))
                             count += 1
+                # en passant left
+                if self.enpassant_possible == (r-1, c-1):
+                    if not piece_pinned or pin_direction == (-1, -1):
+                        moves.append(GameState.rank_file(r-1, c-1))
+                        count += 1
             # white pawn capture right
             if c+1 <= 8:
                 if self.board[r-1][c+1].islower():
@@ -355,6 +387,11 @@ class GameState():
                         else:
                             moves.append(GameState.rank_file(r-1, c+1))
                             count += 1
+                # en passant right 
+                if self.enpassant_possible == (r-1, c+1):
+                    if not piece_pinned or pin_direction == (-1, 1):
+                        moves.append(GameState.rank_file(r-1, c+1))
+                        count += 1
             # append piece moved
             while i < count:
                 piece_moved.append("P")
@@ -398,6 +435,11 @@ class GameState():
                         else:
                             moves.append(GameState.rank_file(r+1, c-1))
                             count += 1
+                # en passant left
+                if self.enpassant_possible == (r+1, c-1):
+                    if not piece_pinned or pin_direction == (1, -1):
+                        moves.append(GameState.rank_file(r+1, c-1))
+                        count += 1
             # black pawn capture right
             if c+1 <= 8:
                 if self.board[r+1][c+1].isupper():
@@ -413,6 +455,11 @@ class GameState():
                         else:
                             moves.append(GameState.rank_file(r+1, c+1))
                             count += 1
+                # en passant right
+                if self.enpassant_possible == (r+1, c+1):
+                    if not piece_pinned or pin_direction == (1, 1):
+                        moves.append(GameState.rank_file(r+1, c+1))
+                        count += 1
             while i < count:
                 piece_moved.append("p")
                 start_sq.append((r, c))
@@ -648,12 +695,14 @@ class GameState():
         pgn = []
         for i in range(0, len(moves)):
             flag = False
+            
             end_sq_val = True if self.board[board_sq[i][0]][board_sq[i][1]] != "-" else False
             pawn_moved = True if self.board[start_sq[i][0]][start_sq[i][1]] == "P" or self.board[start_sq[i][0]][start_sq[i][1]] == "p" else False
             is_promotion = True if pawn_moved and (piece_moved[i] != "P" or piece_moved[i] != "p") else False
             promotion = "=" + str(piece_moved[i].upper()) if is_promotion else ""
             take = "x" if end_sq_val else ""
             piece = "" if pawn_moved else piece_moved[i].upper()
+            isenpassant = True if self.enpassant_possible != () else False
             for j in range(0, len(moves)):
                 # check if indexes are the same
                 # are the moves to the same square?
@@ -681,16 +730,16 @@ class GameState():
             if not flag:
                 # check if pawn was moved
                 if pawn_moved:
-                    # check if rank is 2
-                    # promotion
-
-
-
                     # check if a piece was captured
                     if end_sq_val:
                         pgn.append(rank_file[i][0] + take + moves[i] + promotion)
                     else:
-                        pgn.append(moves[i] + promotion)
+                        # check if en passant
+                        if board_sq[i] == self.enpassant_possible: 
+                            pgn.append(rank_file[i][0] + "x" + moves[i])
+                        else:
+                            pgn.append(moves[i])
+
                 else:
                     pgn.append(piece + take + moves[i])
 
