@@ -12,14 +12,14 @@ class GameState():
         # initialize the board
         self.board = [
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
-            ["8", "-", "-", "-", "-", "k", "-", "-", "-", "8"],
-            ["7", "-", "-", "-", "-", "-", "-", "-", "-", "7"],
+            ["8", "-", "n", "-", "n", "k", "-", "-", "-", "8"],
+            ["7", "-", "-", "-", "-", "-", "-", "Q", "-", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
             ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
             ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
-            ["2", "p", "-", "p", "-", "-", "-", "p", "-", "2"],
-            ["1", "-", "N", "-", "-", "K", "-", "-", "-", "1"],
+            ["2", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
+            ["1", "-", "-", "-", "-", "K", "-", "-", "-", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
 
@@ -70,9 +70,9 @@ class GameState():
 
         # update kings location
         if piece == "K":
-            self.white_king_location = (move_sq[1], move_sq[0])
+            self.white_king_location = (move_sq[0], move_sq[1])
         elif piece == "k":
-            self.black_king_location = (move_sq[1], move_sq[0])
+            self.black_king_location = (move_sq[0], move_sq[1])
 
     # get all valid moves, can't put yourself in check
     def get_valid_moves(self):
@@ -100,6 +100,7 @@ class GameState():
             piece_moved = []
             start_sq = []
             rank_file_move = []
+            
             # only 1 check, block or move king
             if len(self.checks) == 1:
                 check = self.checks[0]
@@ -127,10 +128,31 @@ class GameState():
                             valid_squares.append(valid_square)
                             if valid_square[0] == check_row and valid_square[1] == check_col:
                                 break
-                
+                print(moves)
                 # get rid of moves that dont block check
                 for i in range(len(moves[0]) - 1, -1, -1):
-                    move_sq = GameState.row_col(moves[3][i][1], moves[3][i][0])
+                    if self.white_to_move:
+                        if moves[1][i] == "K":
+                            pgn.append(moves[0][i])
+                            piece_moved.append(moves[1][i])
+                            start_sq.append(moves[2][i])
+                            rank_file_move.append(moves[3][i])
+                    else:
+                        if moves[1][i] == "k":
+                            pgn.append(moves[0][i])
+                            piece_moved.append(moves[1][i])
+                            start_sq.append(moves[2][i])
+                            rank_file_move.append(moves[3][i])
+                    if GameState.row_col(moves[3][i][1], moves[3][i][0]) in valid_squares:
+                        pgn.append(moves[0][i])
+                        piece_moved.append(moves[1][i])
+                        start_sq.append(moves[2][i])
+                        rank_file_move.append(moves[3][i])
+                    
+                    
+                    
+                    '''
+                    # move_sq = GameState.row_col(moves[3][i][1], moves[3][i][0])
                     if self.white_to_move:
                         if moves[1][i] == "K":
                             valid_squares.append(GameState.row_col(moves[3][i][1], moves[3][i][0]))
@@ -147,6 +169,7 @@ class GameState():
                             piece_moved.append(moves[1][i])
                             start_sq.append(moves[2][i])
                             rank_file_move.append(moves[3][i])
+                    '''
             # double check
             else:
                 for i in range(len(moves[0]) - 1, -1, -1):
@@ -179,8 +202,7 @@ class GameState():
                 case = self.board[r][c]
                 if (case.isupper() and self.white_to_move) or (case.islower() and not self.white_to_move):
                     piece = self.board[r][c]
-                    self.move_functions[piece](
-                        r, c, moves, piece_moved, start_sq)
+                    self.move_functions[piece](r, c, moves, piece_moved, start_sq)
 
 
         pgn = GameState.get_pgn(self, moves, piece_moved, start_sq)
@@ -188,93 +210,64 @@ class GameState():
 
     # returns if the player is in check, a list of pins, and list of checks
     def check_for_pins_and_checks(self):
+        # init variables
         pins = []
         checks = []
         in_check = False
         
+        # color to move
         color = True if self.white_to_move else False
         
-        # whites turn to move
+        # determine the start_row and start_col based on whose turn it is
         if color:
             start_row = self.white_king_location[0]
             start_col = self.white_king_location[1]
-            directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
-            for j in range(len(directions)):
-                d = directions[j]
-                possible_pin = ()
-                for i in range(1, 8):
-                    end_row = start_row + d[0] * i
-                    end_col = start_col + d[1] * i
-                    if 1 <= end_row < 9 and 1 <= end_col < 9:
-                        end_piece = self.board[end_row][end_col]
-                        end_piece_color = self.board[end_row][end_col].isupper()
-                        if end_piece_color == color and end_piece.upper() != "K":
-                            if possible_pin == ():
-                                possible_pin = (end_row, end_col, d[0], d[1])
-                            else:
-                                break
-                        elif end_piece != "-":
-                            type = end_piece.upper()
-                            if (0 <= j <= 3 and type == "R") or \
-                                    (4 <= j <= 7 and type == "B") or \
-                                    (i == 1 and type == "P" and ((end_piece_color and 6 <= j <= 7) or (not end_piece_color and 4 <= j <= 5))) or \
-                                    (type == "Q") or (i == 1 and type == "K"):
-                                # no piece blocking so check
-                                if possible_pin == ():
-                                    in_check = True
-                                    checks.append((end_row, end_col, d[0], d[1]))
-                                    break
-                                # piece blocking so pin
-                                else:
-                                    pins.append(possible_pin)
-                                    break
-                            # enemy piece not applying check
-                            else:
-                                break
-                    # off board
-                    else:
-                        break
-                    
-        # blacks turn to moves
         else:
             start_row = self.black_king_location[0]
             start_col = self.black_king_location[1]
-            directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
-            for j in range(len(directions)):
-                d = directions[j]
-                possible_pin = ()
-                for i in range(1, 8):
-                    end_row = start_row + d[0] * i
-                    end_col = start_col + d[1] * i
-                    if 1 <= end_row < 9 and 1 <= end_col < 9:
-                        end_piece = self.board[end_row][end_col]
-                        end_piece_color = self.board[end_row][end_col].islower()
-                        if end_piece_color != color and end_piece.lower() != "k":
+            
+        # king directions
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1))
+        
+        # iterate through kings directions
+        for j in range(len(directions)):
+            d = directions[j]
+            possible_pin = ()
+            # at a distance of eight squares away from the king
+            for i in range(1, 8):
+                end_row = start_row + d[0] * i
+                end_col = start_col + d[1] * i
+                # ensure we are checking only squares on the board
+                if 1 <= end_row < 9 and 1 <= end_col < 9:
+                    end_piece = self.board[end_row][end_col]
+                    end_piece_color = self.board[end_row][end_col].isupper()
+                    # the color of the piece in our path is the same as the king and that piece is not a king
+                    if end_piece_color == color and ((color and end_piece.upper() != "K") or (not color and end_piece.upper() != "k")) and end_piece != "-":
+                        if possible_pin == ():
+                            possible_pin = (end_row, end_col, d[0], d[1])
+                        else:
+                            break
+                    elif end_piece != "-":
+                        type = end_piece.upper()
+                        if (0 <= j <= 3 and type == "R") or \
+                                (4 <= j <= 7 and type == "B") or \
+                                (i == 1 and type == "P" and ((end_piece_color and 6 <= j <= 7) or (not end_piece_color and 4 <= j <= 5))) or \
+                                (type == "Q") or (i == 1 and type == "K"):
+                            # no piece blocking so check
                             if possible_pin == ():
-                                possible_pin = (end_row, end_col, d[0], d[1])
-                            else:
+                                in_check = True
+                                checks.append((end_row, end_col, d[0], d[1]))
                                 break
-                        elif end_piece != "-":
-                            type = end_piece.upper()
-                            if (0 <= j <= 3 and type == "R") or \
-                                    (4 <= j <= 7 and type == "B") or \
-                                    (i == 1 and type == "P" and ((end_piece_color and 6 <= j <= 7) or (not end_piece_color and 4 <= j <= 5))) or \
-                                    (type == "Q") or (i == 1 and type == "K"):
-                                # no piece blocking so check
-                                if possible_pin == ():
-                                    in_check = True
-                                    checks.append((end_row, end_col, d[0], d[1]))
-                                    break
-                                # piece blocking so pin
-                                else:
-                                    pins.append(possible_pin)
-                                    break
-                            # enemy piece not applying check
+                            # piece blocking so pin
                             else:
+                                pins.append(possible_pin)
                                 break
-                    # off board
-                    else:
-                        break          
+                        # enemy piece not applying check
+                        else:
+                            break
+                # off board
+                else:
+                    break
         
 
         # check knight moves
@@ -565,16 +558,26 @@ class GameState():
 
     # king moves
     def get_king_moves(self, r, c, moves, piece_moved, start_sq):
-        direction=((-1, -1), (-1, 0), (-1, 1), (0, -1),
-                   (0, 1), (1, -1), (1, 0), (1, 1))
+        # directions the king can move
+        direction=((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+        
+        # color to move
         color=True if self.white_to_move else False
+        
+        # iterate through all king movements
         for i in range(8):
             end_row = r + direction[i][0]
             end_col = c + direction[i][1]
+            
+            # ensure king stays on the board
             if 1 <= end_row < 9 and 1 <= end_col < 9:
                 end_piece=self.board[end_row][end_col]
                 end_piece_color=self.board[end_row][end_col].islower()
+                
+                # space looking to move to is empty or enemy piece
                 if end_piece == "-" or end_piece_color == color:
+                    
+                    # temporarily move king to that location 
                     if color:
                         king_start_row = self.white_king_location[0]
                         king_start_col = self.white_king_location[1]
@@ -585,11 +588,17 @@ class GameState():
                         king_start_col = self.black_king_location[1]
                         self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
                         self.black_king_location = (end_row, end_col)
+                    
+                    # check if in that temporary position we are in check
                     in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    # if we aren't in check then that is a valid space we can move to
                     if not in_check:
                         moves.append(GameState.rank_file(end_row, end_col))
                         piece_moved.append("K" if color else "k")
                         start_sq.append((r, c))
+                        
+                    # move king back to original position
                     if color:
                         self.white_king_location = (r, c)
                         self.board[king_start_row][king_start_col] = 'K'
