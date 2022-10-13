@@ -13,12 +13,12 @@ class GameState():
         self.board = [
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
             ["8", "-", "-", "-", "-", "k", "-", "-", "-", "8"],
-            ["7", "-", "-", "-", "-", "-", "-", "-", "-", "7"],
+            ["7", "-", "-", "-", "p", "-", "-", "-", "-", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
-            ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
-            ["4", "-", "-", "-", "p", "-", "-", "-", "-", "4"],
+            ["5", "-", "-", "P", "-", "P", "-", "-", "-", "5"],
+            ["4", "-", "-", "p", "-", "p", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
-            ["2", "-", "-", "-", "-", "P", "-", "-", "-", "2"],
+            ["2", "-", "-", "-", "P", "-", "-", "-", "-", "2"],
             ["1", "-", "-", "-", "-", "K", "-", "-", "-", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
@@ -722,9 +722,18 @@ class GameState():
                     # check if you broke the for loop
                     if check:
                         break
-                    # append pgn
-                    pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + promotion)
-                    break
+                    
+                    
+                    # check if pawn and en passant
+                    if pawn_moved:
+                        # check if a piece was captured
+                        # check if en passant
+                        if board_sq[i] == self.enpassant_possible: 
+                            pgn.append(rank_file[i][0] + "x" + moves[i])
+                        else:
+                            # append pgn
+                            pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + promotion)
+                            break
 
 
             if not flag:
