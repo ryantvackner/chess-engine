@@ -6,20 +6,20 @@ Created on Wed Aug  3 22:11:00 2022
 @author: ryantvackner
 """
 
-
 class GameState():
     def __init__(self):
+        
         # initialize the board
         self.board = [
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
-            ["8", "r", "n", "-", "-", "k", "-", "n", "r", "8"],
+            ["8", "r", "-", "-", "-", "k", "-", "-", "r", "8"],
             ["7", "-", "-", "-", "-", "-", "-", "-", "-", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
             ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
             ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
             ["2", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
-            ["1", "R", "N", "-", "-", "K", "-", "N", "R", "1"],
+            ["1", "R", "-", "-", "-", "K", "-", "-", "R", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
 
@@ -57,17 +57,53 @@ class GameState():
         self.move_log = []
 
     def make_move(self, move, piece, start_sq):   
+        # move square
+        move_sq = GameState.row_col(move[1], move[0])  
+        
+        # check if move is castling
+        if piece == "O-O":
+            if self.white_to_move:
+                self.board[8][8] = "-"
+                self.board[8][7] = "K"
+                self.board[8][6] = "R"
+                self.white_king_location = (move_sq[0], move_sq[1])
+                self.current_castle_rights.wks = False
+                self.current_castle_rights.wqs = False
+            else:
+                self.board[1][8] = "-"
+                self.board[1][7] = "k"
+                self.board[1][6] = "r"
+                self.black_king_location = (move_sq[0], move_sq[1])
+                self.current_castle_rights.bks = False
+                self.current_castle_rights.bqs = False
+            self.move_log.append(piece)
+        elif piece == "O-O-O":
+            if self.white_to_move:
+                self.board[8][1] = "-"
+                self.board[8][3] = "K"
+                self.board[8][4] = "R"
+                self.white_king_location = (move_sq[0], move_sq[1])
+                self.current_castle_rights.wks = False
+                self.current_castle_rights.wqs = False
+            else:
+                self.board[1][1] = "-"
+                self.board[1][3] = "k"
+                self.board[1][4] = "r"
+                self.black_king_location = (move_sq[0], move_sq[1])
+                self.current_castle_rights.bks = False
+                self.current_castle_rights.bqs = False
+            self.move_log.append(piece)
+        else:
+            # set piece moved to correct location
+            self.board[move_sq[0]][move_sq[1]] = piece
+            # add move to move log using proper chess notation
+            self.move_log.append(move)
+        
+        # blacks enpassant
         white_enpassant = False
-        # find the starting square using the move notation input
-        # make it blank -
-        move_sq = GameState.row_col(move[1], move[0])        
+        
+        # make it blank -     
         self.board[start_sq[0]][start_sq[1]] = "-"
-
-        # set piece moved to correct location
-        self.board[move_sq[0]][move_sq[1]] = piece
-
-        # add move to move log using proper chess notation
-        self.move_log.append(move)
         
         # take the pawn for en passant
         if move_sq == self.enpassant_possible:
@@ -198,28 +234,7 @@ class GameState():
                         piece_moved.append(moves[1][i])
                         start_sq.append(moves[2][i])
                         rank_file_move.append(moves[3][i])
-                    
-                    
-                    
-                    '''
-                    # move_sq = GameState.row_col(moves[3][i][1], moves[3][i][0])
-                    if self.white_to_move:
-                        if moves[1][i] == "K":
-                            valid_squares.append(GameState.row_col(moves[3][i][1], moves[3][i][0]))
-                        if move_sq in valid_squares:
-                            pgn.append(moves[0][i])
-                            piece_moved.append(moves[1][i])
-                            start_sq.append(moves[2][i])
-                            rank_file_move.append(moves[3][i])
-                    else:
-                        if moves[1][i] == "k":
-                            valid_squares.append(GameState.row_col(moves[3][i][1], moves[3][i][0]))
-                        if move_sq in valid_squares:
-                            pgn.append(moves[0][i])
-                            piece_moved.append(moves[1][i])
-                            start_sq.append(moves[2][i])
-                            rank_file_move.append(moves[3][i])
-                    '''
+
             # double check
             else:
                 for i in range(len(moves[0]) - 1, -1, -1):
@@ -683,7 +698,7 @@ class GameState():
                     king_start_row = self.white_king_location[0]
                     king_start_col = self.white_king_location[1]
                     self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
-                    self.white_king_location = (6, 8)
+                    self.white_king_location = (8, 6)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -691,7 +706,7 @@ class GameState():
                         self.current_castle_rights.wks = False
                     
                     self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
-                    self.white_king_location = (7, 8)
+                    self.white_king_location = (8, 7)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -706,7 +721,7 @@ class GameState():
                     king_start_row = self.white_king_location[0]
                     king_start_col = self.white_king_location[1]
                     self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
-                    self.white_king_location = (4, 8)
+                    self.white_king_location = (8, 4)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -714,7 +729,7 @@ class GameState():
                         self.current_castle_rights.wqs = False
                     
                     self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
-                    self.white_king_location = (3, 8)
+                    self.white_king_location = (8, 3)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -730,7 +745,7 @@ class GameState():
                     king_start_row = self.black_king_location[0]
                     king_start_col = self.black_king_location[1]
                     self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
-                    self.black_king_location = (6, 1)
+                    self.black_king_location = (1, 6)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -738,7 +753,7 @@ class GameState():
                         self.current_castle_rights.bks = False
                     
                     self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
-                    self.black_king_location = (7, 1)
+                    self.black_king_location = (1, 7)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -753,7 +768,7 @@ class GameState():
                     king_start_row = self.black_king_location[0]
                     king_start_col = self.black_king_location[1]
                     self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
-                    self.black_king_location = (4, 1)
+                    self.black_king_location = (1, 4)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -761,7 +776,7 @@ class GameState():
                         self.current_castle_rights.bqs = False
                     
                     self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
-                    self.black_king_location = (3, 1)
+                    self.black_king_location = (1, 3)
                     
                     in_check, pins, checks = self.check_for_pins_and_checks()
                     
@@ -772,29 +787,33 @@ class GameState():
                     self.board[king_start_row][king_start_col] = 'k'
         
         # add the castling moves
-        if self.current_castle_rights.wks:
-            if self.board[8][6] == "-" and self.board[8][7] == "-":
-                moves.append(GameState.rank_file(8, 7))
-                piece_moved.append("O-O")
-                start_sq.append((r, c))
-        if self.current_castle_rights.wqs:
-            if self.board[8][4] == "-" and self.board[8][3] == "-" and self.board[8][2] == "-":
-                moves.append(GameState.rank_file(8, 3))
-                piece_moved.append("O-O-O")
-                start_sq.append((r, c))
-        if self.current_castle_rights.bks:
-            if self.board[1][6] == "-" and self.board[1][7] == "-":
-                moves.append(GameState.rank_file(1, 7))
-                piece_moved.append("O-O")
-                start_sq.append((r, c))
-        if self.current_castle_rights.bqs:
-            if self.board[1][4] == "-" and self.board[1][3] == "-" and self.board[1][2] == "-":
-                moves.append(GameState.rank_file(1, 3))
-                piece_moved.append("O-O-O")
-                start_sq.append((r, c))
+        if color:
+            if self.current_castle_rights.wks:
+                if self.board[8][6] == "-" and self.board[8][7] == "-":
+                    moves.append(GameState.rank_file(8, 7))
+                    piece_moved.append("O-O")
+                    start_sq.append((r, c))
+            if self.current_castle_rights.wqs:
+                if self.board[8][4] == "-" and self.board[8][3] == "-" and self.board[8][2] == "-":
+                    moves.append(GameState.rank_file(8, 3))
+                    piece_moved.append("O-O-O")
+                    start_sq.append((r, c))
+        else:
+            if self.current_castle_rights.bks:
+                if self.board[1][6] == "-" and self.board[1][7] == "-":
+                    moves.append(GameState.rank_file(1, 7))
+                    piece_moved.append("O-O")
+                    start_sq.append((r, c))
+            if self.current_castle_rights.bqs:
+                if self.board[1][4] == "-" and self.board[1][3] == "-" and self.board[1][2] == "-":
+                    moves.append(GameState.rank_file(1, 3))
+                    piece_moved.append("O-O-O")
+                    start_sq.append((r, c))
                         
-    
-    
+
+
+
+
 
     # rank file
     def rank_file(r, c):
