@@ -12,14 +12,14 @@ class GameState():
         # initialize the board
         self.board = [
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
-            ["8", "-", "-", "-", "-", "k", "-", "-", "-", "8"],
-            ["7", "-", "-", "-", "p", "-", "-", "-", "-", "7"],
+            ["8", "r", "n", "-", "-", "k", "-", "n", "r", "8"],
+            ["7", "-", "-", "-", "-", "-", "-", "-", "-", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
-            ["5", "-", "-", "P", "-", "P", "-", "-", "-", "5"],
-            ["4", "-", "-", "p", "-", "p", "-", "-", "-", "4"],
+            ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
+            ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
-            ["2", "-", "-", "-", "P", "-", "-", "-", "-", "2"],
-            ["1", "-", "-", "-", "-", "K", "-", "-", "-", "1"],
+            ["2", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
+            ["1", "R", "N", "-", "-", "K", "-", "N", "R", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
 
@@ -47,6 +47,8 @@ class GameState():
         self.checkmate = False
         self.stalemate = False
         self.enpassant_possible = ()
+        self.current_castle_rights = CastleRights(True, True, True, True)
+        self.castle_rights_log = [self.current_castle_rights]
 
         # white to move
         self.white_to_move = True
@@ -83,8 +85,29 @@ class GameState():
         # update kings location
         if piece == "K":
             self.white_king_location = (move_sq[0], move_sq[1])
+            self.current_castle_rights.wks = False
+            self.current_castle_rights.wqs = False
         elif piece == "k":
             self.black_king_location = (move_sq[0], move_sq[1])
+            self.current_castle_rights.bks = False
+            self.current_castle_rights.bqs = False
+            
+        # update castling rights if rooks moved
+        if piece == "R":
+            # white queen side 
+            if start_sq[0] == 8:
+                if start_sq[1] == 1:
+                    self.current_castle_rights.wqs = False
+                elif start_sq[1] == 8:
+                    self.current_castle_rights.wks = False
+        elif piece == "r":
+            # white queen side 
+            if start_sq[0] == 1:
+                if start_sq[1] == 1:
+                    self.current_castle_rights.bqs = False
+                elif start_sq[1] == 8:
+                    self.current_castle_rights.bks = False
+            
             
         # check if en passent is possible
         # white pawn
@@ -652,6 +675,125 @@ class GameState():
                     else:
                         self.black_king_location = (r, c)
                         self.board[king_start_row][king_start_col] = 'k'
+        
+        # castling
+        if color:
+            if self.current_castle_rights.wks:
+                if self.board[8][6] == "-" and self.board[8][7] == "-":
+                    king_start_row = self.white_king_location[0]
+                    king_start_col = self.white_king_location[1]
+                    self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
+                    self.white_king_location = (6, 8)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.wks = False
+                    
+                    self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
+                    self.white_king_location = (7, 8)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.wks = False
+                        
+                    self.white_king_location = (r, c)
+                    self.board[king_start_row][king_start_col] = 'K'
+            
+            if self.current_castle_rights.wqs:
+                if self.board[8][4] == "-" and self.board[8][3] == "-" and self.board[8][2] == "-":
+                    king_start_row = self.white_king_location[0]
+                    king_start_col = self.white_king_location[1]
+                    self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
+                    self.white_king_location = (4, 8)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.wqs = False
+                    
+                    self.board[self.white_king_location[0]][self.white_king_location[1]] = '-'
+                    self.white_king_location = (3, 8)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.wqs = False
+                        
+                    self.white_king_location = (r, c)
+                    self.board[king_start_row][king_start_col] = 'K'
+                   
+        else:
+            if self.current_castle_rights.bks:
+                if self.board[1][6] == "-" and self.board[1][7] == "-":
+                    king_start_row = self.black_king_location[0]
+                    king_start_col = self.black_king_location[1]
+                    self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
+                    self.black_king_location = (6, 1)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.bks = False
+                    
+                    self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
+                    self.black_king_location = (7, 1)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.bks = False
+                        
+                    self.black_king_location = (r, c)
+                    self.board[king_start_row][king_start_col] = 'K'
+            
+            if self.current_castle_rights.bqs:
+                if self.board[1][4] == "-" and self.board[1][3] == "-" and self.board[1][2] == "-":
+                    king_start_row = self.black_king_location[0]
+                    king_start_col = self.black_king_location[1]
+                    self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
+                    self.black_king_location = (4, 1)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.bqs = False
+                    
+                    self.board[self.black_king_location[0]][self.black_king_location[1]] = '-'
+                    self.black_king_location = (3, 1)
+                    
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    
+                    if in_check:
+                        self.current_castle_rights.bqs = False
+                        
+                    self.black_king_location = (r, c)
+                    self.board[king_start_row][king_start_col] = 'k'
+        
+        # add the castling moves
+        if self.current_castle_rights.wks:
+            if self.board[8][6] == "-" and self.board[8][7] == "-":
+                moves.append(GameState.rank_file(8, 7))
+                piece_moved.append("O-O")
+                start_sq.append((r, c))
+        if self.current_castle_rights.wqs:
+            if self.board[8][4] == "-" and self.board[8][3] == "-" and self.board[8][2] == "-":
+                moves.append(GameState.rank_file(8, 3))
+                piece_moved.append("O-O-O")
+                start_sq.append((r, c))
+        if self.current_castle_rights.bks:
+            if self.board[1][6] == "-" and self.board[1][7] == "-":
+                moves.append(GameState.rank_file(1, 7))
+                piece_moved.append("O-O")
+                start_sq.append((r, c))
+        if self.current_castle_rights.bqs:
+            if self.board[1][4] == "-" and self.board[1][3] == "-" and self.board[1][2] == "-":
+                moves.append(GameState.rank_file(1, 3))
+                piece_moved.append("O-O-O")
+                start_sq.append((r, c))
+                        
+    
     
 
     # rank file
@@ -694,64 +836,86 @@ class GameState():
 
         pgn = []
         for i in range(0, len(moves)):
-            flag = False
-            
-            end_sq_val = True if self.board[board_sq[i][0]][board_sq[i][1]] != "-" else False
-            pawn_moved = True if self.board[start_sq[i][0]][start_sq[i][1]] == "P" or self.board[start_sq[i][0]][start_sq[i][1]] == "p" else False
-            is_promotion = True if pawn_moved and (piece_moved[i] != "P" or piece_moved[i] != "p") else False
-            promotion = "=" + str(piece_moved[i].upper()) if is_promotion else ""
-            take = "x" if end_sq_val else ""
-            piece = "" if pawn_moved else piece_moved[i].upper()
-            isenpassant = True if self.enpassant_possible != () else False
-            for j in range(0, len(moves)):
-                # check if indexes are the same
-                # are the moves to the same square?
-                # the two pieces that are moving there the same?
-                if i != j and moves[i] == moves[j] and piece_moved[i] == piece_moved[j]:
-                    flag = True
-                    # the two pieces that are moved on the same file?
-                    ifile = GameState.rank_file(start_sq[i][0], start_sq[i][1])[0]
-                    jfile = GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]
-                    file_or_row = 1 if ifile == jfile else 0
-                    check = False
-                    for k in range(0, len(moves)):
-                        if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
-                            pgn.append(piece + rank_file[i] + take + moves[i])
-                            check=True
+            if piece_moved[i] == "O-O" or piece_moved[i] == "O-O-O":
+                pgn.append(piece_moved[i])
+            else:
+                flag = False
+                
+                end_sq_val = True if self.board[board_sq[i][0]][board_sq[i][1]] != "-" else False
+                pawn_moved = True if self.board[start_sq[i][0]][start_sq[i][1]] == "P" or self.board[start_sq[i][0]][start_sq[i][1]] == "p" else False
+                is_promotion = True if pawn_moved and (piece_moved[i] != "P" or piece_moved[i] != "p") else False
+                promotion = "=" + str(piece_moved[i].upper()) if is_promotion else ""
+                take = "x" if end_sq_val else ""
+                piece = "" if pawn_moved else piece_moved[i].upper()
+                isenpassant = True if self.enpassant_possible != () else False
+                for j in range(0, len(moves)):
+                    # check if indexes are the same
+                    # are the moves to the same square?
+                    # the two pieces that are moving there the same?
+                    if i != j and moves[i] == moves[j] and piece_moved[i] == piece_moved[j]:
+                        flag = True
+                        # the two pieces that are moved on the same file?
+                        ifile = GameState.rank_file(start_sq[i][0], start_sq[i][1])[0]
+                        jfile = GameState.rank_file(start_sq[j][0], start_sq[j][1])[0]
+                        file_or_row = 1 if ifile == jfile else 0
+                        check = False
+                        for k in range(0, len(moves)):
+                            if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
+                                pgn.append(piece + rank_file[i] + take + moves[i])
+                                check=True
+                                break
+                        # check if you broke the for loop
+                        if check:
                             break
-                    # check if you broke the for loop
-                    if check:
-                        break
-                    
-                    
-                    # check if pawn and en passant
+                        
+                        
+                        # check if pawn and en passant
+                        if pawn_moved:
+                            # check if a piece was captured
+                            # check if en passant
+                            if board_sq[i] == self.enpassant_possible: 
+                                pgn.append(rank_file[i][0] + "x" + moves[i])
+                            else:
+                                # append pgn
+                                pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + promotion)
+                                break
+    
+    
+                if not flag:
+                    # check if pawn was moved
                     if pawn_moved:
                         # check if a piece was captured
-                        # check if en passant
-                        if board_sq[i] == self.enpassant_possible: 
-                            pgn.append(rank_file[i][0] + "x" + moves[i])
+                        if end_sq_val:
+                            pgn.append(rank_file[i][0] + take + moves[i] + promotion)
                         else:
-                            # append pgn
-                            pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + promotion)
-                            break
-
-
-            if not flag:
-                # check if pawn was moved
-                if pawn_moved:
-                    # check if a piece was captured
-                    if end_sq_val:
-                        pgn.append(rank_file[i][0] + take + moves[i] + promotion)
+                            # check if en passant
+                            if board_sq[i] == self.enpassant_possible: 
+                                pgn.append(rank_file[i][0] + "x" + moves[i])
+                            else:
+                                pgn.append(moves[i])
+    
                     else:
-                        # check if en passant
-                        if board_sq[i] == self.enpassant_possible: 
-                            pgn.append(rank_file[i][0] + "x" + moves[i])
-                        else:
-                            pgn.append(moves[i])
-
-                else:
-                    pgn.append(piece + take + moves[i])
-
-
-            # added in if statement to check for check and checkmate
+                        pgn.append(piece + take + moves[i])
+    
+    
+                # added in if statement to check for check and checkmate
         return pgn
+    
+class CastleRights():
+    def __init__(self, white_king_side, white_queen_side, black_king_side, black_queen_side):
+        self.wks = white_king_side
+        self.wqs = white_queen_side
+        self.bks = black_king_side
+        self.bqs = black_queen_side
+        
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
