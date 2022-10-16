@@ -52,9 +52,12 @@ def main():
                 
                 # blacks turn now
                 gs.white_to_move = False
+            
         
         # redraw the board for black
         draw_board(gs.board)
+        
+        print(gs.enpassant_possible)
         
         # black to move
         while not gs.white_to_move:
@@ -85,6 +88,7 @@ def main():
                 
                 # blacks turn now
                 gs.white_to_move = True
+                
         
         # increase the move number
         move_number += 1
