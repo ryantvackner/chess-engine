@@ -59,7 +59,7 @@ class GameState():
     def make_move(self, move, piece, start_sq):   
         # move square
         move_sq = GameState.row_col(move[1], move[0])  
-        
+        print(piece)
         # check if move is castling
         if piece == "O-O":
             if self.white_to_move:
@@ -69,6 +69,7 @@ class GameState():
                 self.white_king_location = (move_sq[0], move_sq[1])
                 self.current_castle_rights.wks = False
                 self.current_castle_rights.wqs = False
+                print(move_sq)
             else:
                 self.board[1][8] = "-"
                 self.board[1][7] = "k"
@@ -879,8 +880,8 @@ class GameState():
                         file_or_row = 1 if ifile == jfile else 0
                         check = False
                         for k in range(0, len(moves)):
-                            if i != k and j != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
-                                pgn.append(piece + rank_file[i] + take + moves[i])
+                            if i != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
+                                pgn.append(piece + rank_file[i][file_or_row] + take + moves[i])
                                 check=True
                                 break
                         # check if you broke the for loop
