@@ -93,10 +93,14 @@ class GameState():
                 self.current_castle_rights.bqs = False
             self.move_log.append(piece)
         else:
-            # set piece moved to correct location
-            self.board[move_sq[0]][move_sq[1]] = piece
+            if len(piece) > 1:
+                self.board[move_sq[0]][move_sq[1]] = piece[1]
+            else:
+                # set piece moved to correct location
+                self.board[move_sq[0]][move_sq[1]] = piece
             # add move to move log using proper chess notation
             self.move_log.append(move)
+
         
         # blacks enpassant
         white_enpassant = False
@@ -111,7 +115,8 @@ class GameState():
             else:
                 self.board[move_sq[0]-1][move_sq[1]] = "-"
             self.enpassant_possible = ()
-        elif white_enpassant == self.white_to_move:
+        else:
+            #if white_enpassant == self.white_to_move:
             self.enpassant_possible = ()
 
         # swap whos turn it is to move
@@ -990,10 +995,6 @@ class CastleRights():
     
     
     
-    
-    
-    
-    
-    
+
     
     
