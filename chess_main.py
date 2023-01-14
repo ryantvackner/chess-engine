@@ -5,7 +5,8 @@ Created on Wed Aug  3 22:49:14 2022
 
 @author: ryantvackner
 """
-  
+
+# import chess_engine
 import chess_engine
 
 def main():
@@ -29,7 +30,7 @@ def main():
             valid_moves = gs.get_valid_moves()
         
             # print valid moves
-            print(valid_moves[0])
+            print(valid_moves)
         
             # get move 1 input
             move = input(format(move_number) + ". ")
