@@ -813,9 +813,6 @@ class GameState():
                         
 
 
-
-
-
     # rank file
     def rank_file(r, c):
         # maps keys to values
@@ -856,8 +853,66 @@ class GameState():
 
         pgn = []
         for i in range(0, len(moves)):
+            if piece_moved[i] == "O-O":
+                if self.white_to_move:
+                    self.white_to_move = not self.white_to_move
+                    self.board[8][8] = "-"
+                    self.board[8][6] = "R"
+                    # check if in we put enemy in check
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    self.board[8][8] = "R"
+                    self.board[8][6] = "-"
+                    self.white_to_move = not self.white_to_move
+                else:
+                    self.white_to_move = not self.white_to_move
+                    self.board[1][8] = "-"
+                    self.board[1][6] = "r"
+                    # check if in we put enemy in check
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    self.board[1][8] = "r"
+                    self.board[1][6] = "-"
+                    self.white_to_move = not self.white_to_move
+            elif piece_moved[i] == "O-O-O":
+                if self.white_to_move:
+                    self.white_to_move = not self.white_to_move
+                    self.board[8][1] = "-"
+                    self.board[8][4] = "R"
+                    # check if in we put enemy in check
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    self.board[8][1] = "R"
+                    self.board[8][4] = "-"
+                    self.white_to_move = not self.white_to_move
+                else:
+                    self.white_to_move = not self.white_to_move
+                    self.board[1][1] = "-"
+                    self.board[1][4] = "r"
+                    # check if in we put enemy in check
+                    in_check, pins, checks = self.check_for_pins_and_checks()
+                    self.board[1][1] = "r"
+                    self.board[1][4] = "-"
+                    self.white_to_move = not self.white_to_move
+            else:
+                # switch whos turn it is
+                # save old piece on move square
+                # move piece to move square
+                self.white_to_move = not self.white_to_move
+                old_piece = self.board[board_sq[i][0]][board_sq[i][1]]
+                self.board[board_sq[i][0]][board_sq[i][1]] = piece_moved[i]
+  
+                # check if in we put enemy in check
+                in_check, pins, checks = self.check_for_pins_and_checks()
+                
+                # move everything back to where it goes
+                self.white_to_move = not self.white_to_move
+                self.board[start_sq[i][0]][start_sq[i][1]] = piece_moved[i]
+                self.board[board_sq[i][0]][board_sq[i][1]] = old_piece
+
+            check_king = "+" if in_check else ""      
+
+            print(in_check)
+
             if piece_moved[i] == "O-O" or piece_moved[i] == "O-O-O":
-                pgn.append(piece_moved[i])
+                pgn.append(piece_moved[i] + check_king)
             else:
                 flag = False
                 
@@ -881,7 +936,7 @@ class GameState():
                         check = False
                         for k in range(0, len(moves)):
                             if i != k and moves[i] == moves[k] and piece_moved[i] == piece_moved[k]:
-                                pgn.append(piece + rank_file[i][file_or_row] + take + moves[i])
+                                pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + check_king)
                                 check=True
                                 break
                         # check if you broke the for loop
@@ -894,10 +949,10 @@ class GameState():
                             # check if a piece was captured
                             # check if en passant
                             if board_sq[i] == self.enpassant_possible: 
-                                pgn.append(rank_file[i][0] + "x" + moves[i])
+                                pgn.append(rank_file[i][0] + "x" + moves[i] + check_king)
                             else:
                                 # append pgn
-                                pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + promotion)
+                                pgn.append(piece + rank_file[i][file_or_row] + take + moves[i] + promotion + check_king)
                                 break
     
     
@@ -906,16 +961,16 @@ class GameState():
                     if pawn_moved:
                         # check if a piece was captured
                         if end_sq_val:
-                            pgn.append(rank_file[i][0] + take + moves[i] + promotion)
+                            pgn.append(rank_file[i][0] + take + moves[i] + promotion + check_king)
                         else:
                             # check if en passant
                             if board_sq[i] == self.enpassant_possible: 
-                                pgn.append(rank_file[i][0] + "x" + moves[i])
+                                pgn.append(rank_file[i][0] + "x" + moves[i] + check_king)
                             else:
-                                pgn.append(moves[i])
+                                pgn.append(moves[i] + check_king)
     
                     else:
-                        pgn.append(piece + take + moves[i])
+                        pgn.append(piece + take + moves[i] + check_king)
     
     
                 # added in if statement to check for check and checkmate
