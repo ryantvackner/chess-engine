@@ -12,14 +12,14 @@ class GameState():
         # initialize the board
         self.board = [
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
-            ["8", "r", "-", "-", "-", "k", "-", "-", "r", "8"],
-            ["7", "-", "-", "-", "-", "-", "-", "-", "-", "7"],
+            ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
+            ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
             ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
             ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
             ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
             ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
-            ["2", "-", "-", "-", "-", "-", "-", "-", "-", "2"],
-            ["1", "R", "-", "-", "-", "K", "-", "-", "R", "1"],
+            ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
+            ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
 
@@ -59,7 +59,6 @@ class GameState():
     def make_move(self, move, piece, start_sq):   
         # move square
         move_sq = GameState.row_col(move[1], move[0])  
-        print(piece)
         # check if move is castling
         if piece == "O-O":
             if self.white_to_move:
@@ -69,7 +68,6 @@ class GameState():
                 self.white_king_location = (move_sq[0], move_sq[1])
                 self.current_castle_rights.wks = False
                 self.current_castle_rights.wqs = False
-                print(move_sq)
             else:
                 self.board[1][8] = "-"
                 self.board[1][7] = "k"
@@ -215,7 +213,6 @@ class GameState():
                             valid_squares.append(valid_square)
                             if valid_square[0] == check_row and valid_square[1] == check_col:
                                 break
-                print(moves)
                 # get rid of moves that dont block check
                 for i in range(len(moves[0]) - 1, -1, -1):
                     if self.white_to_move:
@@ -380,10 +377,10 @@ class GameState():
                         for z in range(4):
                             moves.append(GameState.rank_file(r-1, c))
                             start_sq.append((r, c))
-                        piece_moved.append("Q")
-                        piece_moved.append("R")
-                        piece_moved.append("B")
-                        piece_moved.append("N")
+                        piece_moved.append("PQ")
+                        piece_moved.append("PR")
+                        piece_moved.append("PB")
+                        piece_moved.append("PN")
                     else:
                         moves.append(GameState.rank_file(r-1, c))
                         count += 1
@@ -399,10 +396,10 @@ class GameState():
                             for z in range(4):
                                 moves.append(GameState.rank_file(r-1, c-1))
                                 start_sq.append((r, c))
-                            piece_moved.append("Q")
-                            piece_moved.append("R")
-                            piece_moved.append("B")
-                            piece_moved.append("N")
+                            piece_moved.append("PQ")
+                            piece_moved.append("PR")
+                            piece_moved.append("PB")
+                            piece_moved.append("PN")
                         else:
                             moves.append(GameState.rank_file(r-1, c-1))
                             count += 1
@@ -419,10 +416,10 @@ class GameState():
                             for z in range(4):
                                 moves.append(GameState.rank_file(r-1, c+1))
                                 start_sq.append((r, c))
-                            piece_moved.append("Q")
-                            piece_moved.append("R")
-                            piece_moved.append("B")
-                            piece_moved.append("N")
+                            piece_moved.append("PQ")
+                            piece_moved.append("PR")
+                            piece_moved.append("PB")
+                            piece_moved.append("PN")
                         else:
                             moves.append(GameState.rank_file(r-1, c+1))
                             count += 1
@@ -448,10 +445,10 @@ class GameState():
                         for z in range(4):
                             moves.append(GameState.rank_file(r+1, c))
                             start_sq.append((r, c))
-                        piece_moved.append("q")
-                        piece_moved.append("r")
-                        piece_moved.append("b")
-                        piece_moved.append("n")
+                        piece_moved.append("pq")
+                        piece_moved.append("pr")
+                        piece_moved.append("pb")
+                        piece_moved.append("pn")
                     else:
                         moves.append(GameState.rank_file(r+1, c))
                         count += 1
@@ -467,10 +464,10 @@ class GameState():
                             for z in range(4):
                                 moves.append(GameState.rank_file(r+1, c-1))
                                 start_sq.append((r, c))
-                            piece_moved.append("q")
-                            piece_moved.append("r")
-                            piece_moved.append("b")
-                            piece_moved.append("n")
+                            piece_moved.append("pq")
+                            piece_moved.append("pr")
+                            piece_moved.append("pb")
+                            piece_moved.append("pn")
                         else:
                             moves.append(GameState.rank_file(r+1, c-1))
                             count += 1
@@ -487,10 +484,10 @@ class GameState():
                             for z in range(4):
                                 moves.append(GameState.rank_file(r+1, c+1))
                                 start_sq.append((r, c))
-                            piece_moved.append("q")
-                            piece_moved.append("r")
-                            piece_moved.append("b")
-                            piece_moved.append("n")
+                            piece_moved.append("pq")
+                            piece_moved.append("pr")
+                            piece_moved.append("pb")
+                            piece_moved.append("pn")
                         else:
                             moves.append(GameState.rank_file(r+1, c+1))
                             count += 1
@@ -842,7 +839,7 @@ class GameState():
 
     def get_pgn(self, moves, piece_moved, start_sq):
         # temporarily good
-        # still need to add it check, promotions, and checkmate
+        # still need to add in checkmate
         # also still need to work out PGN for 3 queens on the board
         rank_file = []
         board_sq = []
@@ -850,7 +847,10 @@ class GameState():
             rank_file.append(GameState.rank_file(start_sq[i][0], start_sq[i][1]))
         for i in range(0, len(moves)):
             board_sq.append(GameState.row_col(moves[i][1], moves[i][0]))
-
+        
+        # color to move
+        color=True if self.white_to_move else False
+        
         pgn = []
         for i in range(0, len(moves)):
             if piece_moved[i] == "O-O":
@@ -909,17 +909,21 @@ class GameState():
 
             check_king = "+" if in_check else ""      
 
-            print(in_check)
-
             if piece_moved[i] == "O-O" or piece_moved[i] == "O-O-O":
                 pgn.append(piece_moved[i] + check_king)
             else:
                 flag = False
                 
+                is_promotion = False
                 end_sq_val = True if self.board[board_sq[i][0]][board_sq[i][1]] != "-" else False
-                pawn_moved = True if self.board[start_sq[i][0]][start_sq[i][1]] == "P" or self.board[start_sq[i][0]][start_sq[i][1]] == "p" else False
-                is_promotion = True if pawn_moved and (piece_moved[i] != "P" or piece_moved[i] != "p") else False
-                promotion = "=" + str(piece_moved[i].upper()) if is_promotion else ""
+                pawn_moved = True if self.board[start_sq[i][0]][start_sq[i][1]][0] == "P" or self.board[start_sq[i][0]][start_sq[i][1]][0] == "p" else False
+                if color:
+                    if len(piece_moved[i]) > 1:
+                        is_promotion = True if pawn_moved else False
+                else:
+                    if len(piece_moved[i]) > 1:
+                        is_promotion = True if pawn_moved else False
+                promotion = "=" + str(piece_moved[i][1].upper()) if is_promotion else ""
                 take = "x" if end_sq_val else ""
                 piece = "" if pawn_moved else piece_moved[i].upper()
                 isenpassant = True if self.enpassant_possible != () else False
@@ -973,7 +977,6 @@ class GameState():
                         pgn.append(piece + take + moves[i] + check_king)
     
     
-                # added in if statement to check for check and checkmate
         return pgn
     
 class CastleRights():
