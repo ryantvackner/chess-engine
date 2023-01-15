@@ -8,6 +8,7 @@ Created on Wed Aug  3 22:49:14 2022
 
 # import chess_engine
 import chess_engine
+import chess_ai
 
 def main():
     # create the board/gamestate
@@ -24,13 +25,15 @@ def main():
         # print the board
         draw_board(gs.board)
         
+        print(gs.enpassant_possible)
+        
         # white to move
         while gs.white_to_move:
             # create the valid moves
             valid_moves = gs.get_valid_moves()
         
             # print valid moves
-            print(valid_moves)
+            print(valid_moves[0])
         
             # get move 1 input
             move = input(format(move_number) + ". ")
@@ -66,10 +69,11 @@ def main():
             valid_moves = gs.get_valid_moves()
         
             # print valid moves
-            print(valid_moves[0])
+            # print(valid_moves[0])
         
             # get move 1 input
-            move = input(format(move_number) + ". ")
+            # move = input(format(move_number) + ". ")
+            move = chess_ai.get_random_move(valid_moves[0])
         
             # resign the game 
             if move == "qq":
