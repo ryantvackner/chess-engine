@@ -5,6 +5,7 @@ Created on Wed Aug  3 22:11:00 2022
 
 @author: ryantvackner
 """
+import copy
 
 class GameState():
     def __init__(self):
@@ -22,6 +23,22 @@ class GameState():
             ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
             [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
             ]
+        
+        # initialize the test board
+        self.test_board = [
+            [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "],
+            ["8", "r", "n", "b", "q", "k", "b", "n", "r", "8"],
+            ["7", "p", "p", "p", "p", "p", "p", "p", "p", "7"],
+            ["6", "-", "-", "-", "-", "-", "-", "-", "-", "6"],
+            ["5", "-", "-", "-", "-", "-", "-", "-", "-", "5"],
+            ["4", "-", "-", "-", "-", "-", "-", "-", "-", "4"],
+            ["3", "-", "-", "-", "-", "-", "-", "-", "-", "3"],
+            ["2", "P", "P", "P", "P", "P", "P", "P", "P", "2"],
+            ["1", "R", "N", "B", "Q", "K", "B", "N", "R", "1"],
+            [" ", "a", "b", "c", "d", "e", "f", "g", "h", " "]
+            ]
+
+
 
         self.move_functions = {"P": self.get_pawn_moves,
                                "p": self.get_pawn_moves,
@@ -39,7 +56,11 @@ class GameState():
         # king location
         self.white_king_location = (8, 5)
         self.black_king_location = (1, 5)
-
+        
+        # test king location
+        self.test_white_king_location = (8, 5)
+        self.test_black_king_location = (1, 5)
+        
         # other king stuuf
         self.in_check = False
         self.pins = []
@@ -49,12 +70,176 @@ class GameState():
         self.enpassant_possible = ()
         self.current_castle_rights = CastleRights(True, True, True, True)
         self.castle_rights_log = [self.current_castle_rights]
+        
+        # other test king stuuf
+        self.test_in_check = False
+        self.test_pins = []
+        self.test_checks = []
+        self.test_checkmate = False
+        self.test_stalemate = False
+        self.test_enpassant_possible = ()
+        self.test_current_castle_rights = CastleRights(True, True, True, True)
+        self.test_castle_rights_log = [self.test_current_castle_rights]
 
         # white to move
         self.white_to_move = True
+        
+        # test white to move
+        self.test_white_to_move = True
 
         # move log (PGN)
         self.move_log = []
+        
+
+
+
+
+
+
+    def copy_board(self, move, piece, start_sq):
+        # board
+        self.test_board = copy.deepcopy(self.board)
+        
+        # king location
+        self.test_white_king_location = copy.deepcopy(self.white_king_location)
+        self.test_black_king_location = copy.deepcopy(self.black_king_location)
+
+        # other king stuuf
+        self.test_in_check = copy.deepcopy(self.in_check)
+        self.test_pins = copy.deepcopy(self.pins)
+        self.test_checks = copy.deepcopy(self.checks)
+        self.test_checkmate = copy.deepcopy(self.checkmate)
+        self.test_stalemate = copy.deepcopy(self.stalemate)
+        self.test_enpassant_possible = copy.deepcopy(self.enpassant_possible)
+        self.test_current_castle_rights = copy.deepcopy(self.current_castle_rights)
+        self.test_castle_rights_log = copy.deepcopy(self.castle_rights_log)
+
+        # white to move
+        self.test_white_to_move = copy.deepcopy(self.white_to_move)
+        
+        self.test_move(move, piece, start_sq)
+
+
+
+    def test_move(self, move, piece, start_sq):
+        # reset the test board
+        # it might be better when i move to recurssion to call the reset_test 
+        # and have the reset_test then call test move and have test move recurse
+        # copy the board
+        # self.reset_test()
+        
+        # move square
+        move_sq = GameState.row_col(move[1], move[0])
+        
+        
+        # check if move is castling
+        if piece == "O-O":
+            if self.test_white_to_move:
+                self.test_board[8][8] = "-"
+                self.test_board[8][7] = "K"
+                self.test_board[8][6] = "R"
+                self.test_white_king_location = (move_sq[0], move_sq[1])
+                self.test_current_castle_rights.wks = False
+                self.test_current_castle_rights.wqs = False
+            else:
+                self.test_board[1][8] = "-"
+                self.test_board[1][7] = "k"
+                self.test_board[1][6] = "r"
+                self.test_black_king_location = (move_sq[0], move_sq[1])
+                self.test_current_castle_rights.bks = False
+                self.test_current_castle_rights.bqs = False
+        elif piece == "O-O-O":
+            if self.test_white_to_move:
+                self.test_board[8][1] = "-"
+                self.test_board[8][3] = "K"
+                self.test_board[8][4] = "R"
+                self.test_white_king_location = (move_sq[0], move_sq[1])
+                self.test_current_castle_rights.wks = False
+                self.test_current_castle_rights.wqs = False
+            else:
+                self.test_board[1][1] = "-"
+                self.test_board[1][3] = "k"
+                self.test_board[1][4] = "r"
+                self.test_black_king_location = (move_sq[0], move_sq[1])
+                self.test_current_castle_rights.bks = False
+                self.test_current_castle_rights.bqs = False
+        else:
+            if len(piece) > 1:
+                self.test_board[move_sq[0]][move_sq[1]] = piece[1]
+            else:
+                # set piece moved to correct location
+                self.test_board[move_sq[0]][move_sq[1]] = piece
+
+
+        
+        # blacks enpassant
+        self.test_white_enpassant = False
+        
+        # make it blank -     
+        self.test_board[start_sq[0]][start_sq[1]] = "-"
+        
+        # take the pawn for en passant
+        if move_sq == self.test_enpassant_possible:
+            if self.test_white_to_move:
+                self.test_board[move_sq[0]+1][move_sq[1]] = "-"
+            else:
+                self.test_board[move_sq[0]-1][move_sq[1]] = "-"
+            self.test_enpassant_possible = ()
+        else:
+            #if white_enpassant == self.white_to_move:
+            self.test_enpassant_possible = ()
+
+        # swap whos turn it is to move
+        self.test_white_to_move = not self.test_white_to_move
+
+        # update kings location
+        if piece == "K":
+            self.test_white_king_location = (move_sq[0], move_sq[1])
+            self.test_current_castle_rights.wks = False
+            self.test_current_castle_rights.wqs = False
+        elif piece == "k":
+            self.test_black_king_location = (move_sq[0], move_sq[1])
+            self.test_current_castle_rights.bks = False
+            self.test_current_castle_rights.bqs = False
+            
+        # update castling rights if rooks moved
+        if piece == "R":
+            # white queen side 
+            if start_sq[0] == 8:
+                if start_sq[1] == 1:
+                    self.test_current_castle_rights.wqs = False
+                elif start_sq[1] == 8:
+                    self.test_current_castle_rights.wks = False
+        elif piece == "r":
+            # white queen side 
+            if start_sq[0] == 1:
+                if start_sq[1] == 1:
+                    self.test_current_castle_rights.bqs = False
+                elif start_sq[1] == 8:
+                    self.test_current_castle_rights.bks = False
+            
+            
+        # check if en passent is possible
+        # white pawn
+        if piece == "P":
+            if start_sq[0] == 7 and move_sq[0] == 5:
+                self.test_enpassant_possible = (6, start_sq[1])
+                self.test_white_enpassant = False
+        # black pawn 
+        elif piece == "p":
+            if start_sq[0] == 2 and move_sq[0] == 4:
+                self.test_enpassant_possible = (3, start_sq[1])
+                self.test_white_enpassant = True
+
+
+
+
+
+
+
+
+
+
 
     def make_move(self, move, piece, start_sq):   
         # move square
@@ -269,7 +454,10 @@ class GameState():
             for c in range(1, 9):
                 case = self.board[r][c]
                 if (case.isupper() and self.white_to_move) or (case.islower() and not self.white_to_move):
-                    piece = self.board[r][c]
+                    if (len(self.board[r][c]) > 1):
+                        piece = self.board[r][c][1]
+                    else:  
+                        piece = self.board[r][c]
                     self.move_functions[piece](r, c, moves, piece_moved, start_sq)
 
 
@@ -995,6 +1183,10 @@ class CastleRights():
     
     
     
-
+    
+    
+    
+    
+    
     
     
