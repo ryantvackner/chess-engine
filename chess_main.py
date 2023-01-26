@@ -36,8 +36,8 @@ def main():
             # get move 1 input
             move = input(format(move_number) + ". ")
             #move = chess_ai.get_random_move(valid_moves[0])
-            print(move)
-            print(valid_moves)
+            #print(move)
+            #print(valid_moves)
             
             # resign the game 
             if move == "qq":
@@ -72,11 +72,13 @@ def main():
         
             # get move 1 input
             # move = input(format(move_number) + ". ")
+            
+            #move = chess_ai.get_best_min_max(gs, valid_moves[0], valid_moves[1], valid_moves[2], valid_moves[3])
             move = chess_ai.get_best_move(gs, valid_moves[0], valid_moves[1], valid_moves[2], valid_moves[3])
             #move = None
             if move is None:
                 move = chess_ai.get_random_move(valid_moves[0])
-            print(move)
+            print(format(move_number) + ". " + move)
         
             # resign the game 
             if move == "qq":
@@ -85,7 +87,7 @@ def main():
         
             # check if the move is valid
             if move in valid_moves[0]:
-                print(valid_moves[0])
+                #print(valid_moves[0])
                 # find the move id and find out what piece made the move
                 move_id = valid_moves[0].index(move)
                 piece = valid_moves[1][move_id]
