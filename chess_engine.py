@@ -443,6 +443,13 @@ class GameState():
             return self.get_all_possible_moves()
         
         return pgn, piece_moved, start_sq, rank_file_move
+    
+    
+    
+    
+    
+    
+    
 
     # get all possible moves
     def get_all_possible_moves(self):
